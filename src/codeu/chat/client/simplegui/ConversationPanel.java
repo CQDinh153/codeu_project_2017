@@ -37,6 +37,7 @@ public final class ConversationPanel extends JPanel {
   private final ClientContext clientContext;
   private final MessagePanel messagePanel;
   private final DefaultListModel<String> convListModel = new DefaultListModel<>();
+  private final JList<String> conversationList = new JList<>(convListModel);
 
   public ConversationPanel(ClientContext clientContext, MessagePanel messagePanel) {
     super(new GridBagLayout());
@@ -65,7 +66,6 @@ public final class ConversationPanel extends JPanel {
     final JPanel listShowPanel = new JPanel();
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
-    final JList<String> conversationList = new JList<>(convListModel);
     conversationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     conversationList.setVisibleRowCount(15);
     conversationList.setSelectedIndex(-1);
@@ -172,17 +172,22 @@ public final class ConversationPanel extends JPanel {
       @Override
       public void run() {
 
-        // Remember what conversation was selected
-        final String selected = conversationList.getSelectedValue();
 
-        // Update the conversation display panel
-        ConversationPanel.this.getNewConversations();
-
-        // Reselect the conversation
-        conversationList.setSelectedValue(selected, false);
 
       }
     }, POLLING_DELAY_MS, POLLING_PERIOD_MS);
+  }
+
+  // Update the list of conversations
+  public void updateConversations(){
+    // Remember what conversation was selected
+    final String selected = conversationList.getSelectedValue();
+
+    // Update the conversation display panel
+    ConversationPanel.this.getNewConversations();
+
+    // Reselect the conversation
+    conversationList.setSelectedValue(selected, false);
   }
 
   // Populate ListModel - updates display objects.

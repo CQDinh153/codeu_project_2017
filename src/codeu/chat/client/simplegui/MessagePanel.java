@@ -40,7 +40,10 @@ public final class MessagePanel extends JPanel {
   // These objects are modified by the Conversation Panel.
   private final JLabel messageOwnerLabel = new JLabel("Owner:", JLabel.RIGHT);
   private final JLabel messageConversationLabel = new JLabel("Conversation:", JLabel.LEFT);
+  // messageListModel is an instance variable so Conversation panel
+  // can update it.
   private final DefaultListModel<String> messageListModel = new DefaultListModel<>();
+  private final JList<String> messageList = new JList<>(messageListModel);
 
   private final long POLLING_PERIOD_MS = 1000;
   private final long POLLING_DELAY_MS = 0;
@@ -110,9 +113,6 @@ public final class MessagePanel extends JPanel {
     final JPanel listShowPanel = new JPanel();
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
-    // messageListModel is an instance variable so Conversation panel
-    // can update it.
-    final JList<String> messageList = new JList<>(messageListModel);
     messageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     messageList.setVisibleRowCount(15);
     messageList.setSelectedIndex(-1);
@@ -225,27 +225,21 @@ public final class MessagePanel extends JPanel {
 
     // Panel is set up. If there is a current conversation, Populate the conversation list.
     getAllMessages();
+  }
 
-    // Poll the server for updates
-    Timer messageUpdateTimer = new Timer();
-    messageUpdateTimer.schedule(new TimerTask() {
-      @Override
-      public void run() {
+  // Update the list of messages
+  public void updateMessages(){
+    // Remember what message is selected
+    final String selected = messageList.getSelectedValue();
 
-        // Remember what message is selected
-        final String selected = messageList.getSelectedValue();
+    // Get new messages
+    clientContext.message.updateMessages(false);
 
-        // Get new messages
-        clientContext.message.updateMessages(false);
+    // Update the message display panel
+    MessagePanel.this.getNewMessages();
 
-        // Update the message display panel
-        MessagePanel.this.getNewMessages();
-
-        // Reselect the message
-        messageList.setSelectedValue(selected, false);
-
-      }
-    }, POLLING_DELAY_MS, POLLING_PERIOD_MS);
+    // Reselect the message
+    messageList.setSelectedValue(selected, false);
   }
 
   // Populate ListModel - updates display objects.

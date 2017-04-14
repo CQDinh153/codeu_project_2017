@@ -31,10 +31,9 @@ import codeu.chat.common.User;
 @SuppressWarnings("serial")
 public final class UserPanel extends JPanel {
 
-  private final long POLLING_PERIOD_MS = 1000;
-  private final long POLLING_DELAY_MS = 0;
   private final ClientContext clientContext;
   private final DefaultListModel<String> userListModel = new DefaultListModel<>();
+  private final JList<String> userList = new JList<>(userListModel);
 
   public UserPanel(ClientContext clientContext) {
     super(new GridBagLayout());
@@ -78,7 +77,6 @@ public final class UserPanel extends JPanel {
     final JPanel listShowPanel = new JPanel();
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
-    final JList<String> userList = new JList<>(userListModel);
     userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     userList.setVisibleRowCount(10);
     userList.setSelectedIndex(-1);
@@ -194,23 +192,18 @@ public final class UserPanel extends JPanel {
     });
 
     getAllUsers();
+  }
 
-    // Poll the server for updates
-    java.util.Timer userUpdateTimer = new java.util.Timer();
-    userUpdateTimer.schedule(new TimerTask() {
-      @Override
-      public void run() {
+  // Update the list of users
+  public void updateUsers(){
+    // Remember what user was selected
+    final String selected = userList.getSelectedValue();
 
-        // Remember what user was selected
-        final String selected = userList.getSelectedValue();
+    // Update the user display panel
+    UserPanel.this.getNewUsers();
 
-        // Update the user display panel
-        UserPanel.this.getNewUsers();
-
-        // Reselect the user
-        userList.setSelectedValue(selected, false);
-      }
-    }, POLLING_DELAY_MS, POLLING_PERIOD_MS);
+    // Reselect the user
+    userList.setSelectedValue(selected, false);
   }
 
   // Populate ListModel - updates display objects.

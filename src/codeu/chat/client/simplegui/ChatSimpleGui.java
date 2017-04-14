@@ -17,8 +17,10 @@ package codeu.chat.client.simplegui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.*;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 
 import codeu.chat.client.ClientContext;
@@ -28,6 +30,9 @@ import codeu.chat.util.Logger;
 
 // Chat - top-level client application - Java Simple GUI (using Java Swing)
 public final class ChatSimpleGui {
+
+	private final long POLLING_PERIOD_MS = 1000;
+	private final long POLLING_DELAY_MS = 0;
 
 	private final static Logger.Log LOG = Logger.newLog(ChatSimpleGui.class);
 
@@ -98,20 +103,19 @@ public final class ChatSimpleGui {
 		popUpFrame.setSize(400, 400);
 		popUpFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		popUpFrame.setLocation(360, 360);
-		
+
+		// Build main panels - Users, Conversations, Messages.
+		final UserPanel usersViewPanel = new UserPanel(clientContext);
+		usersViewPanel.setBorder(paneBorder());
+
+		popUpFrame.getContentPane().add(usersViewPanel);
+
 		/* if "manage users" option is clicked, opens up sign-in window */
 		jmiSwitchUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
 				if(e.getActionCommand().equals("Manage Users")) {
 					
 					popUpFrame.setVisible(true);
-					
-					// Build main panels - Users, Conversations, Messages.
-					final JPanel usersViewPanel = new UserPanel(clientContext);
-					usersViewPanel.setBorder(paneBorder());
-					final GridBagConstraints usersViewC = new GridBagConstraints();
-					
-					popUpFrame.getContentPane().add(usersViewPanel);
 				}
 			}
 		});
@@ -133,7 +137,7 @@ public final class ChatSimpleGui {
 		final GridBagConstraints messagesViewC = new GridBagConstraints();
 
 		// ConversationsPanel gets access to MessagesPanel
-		final JPanel conversationsViewPanel = new ConversationPanel(clientContext, messagesViewPanel);
+		final ConversationPanel conversationsViewPanel = new ConversationPanel(clientContext, messagesViewPanel);
 		conversationsViewPanel.setBorder(paneBorder());
 		final GridBagConstraints conversationViewC = new GridBagConstraints();
 
@@ -159,6 +163,17 @@ public final class ChatSimpleGui {
 
 		mainFrame.add(mainViewPanel);
 		mainFrame.pack();
+
+		// Poll the server for updates
+		java.util.Timer pollingTimer = new java.util.Timer();
+		pollingTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				messagesViewPanel.updateMessages();
+				usersViewPanel.updateUsers();
+				conversationsViewPanel.updateConversations();
+			}
+		}, POLLING_DELAY_MS, POLLING_PERIOD_MS);
 	}
 
 }
