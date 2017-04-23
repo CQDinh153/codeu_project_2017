@@ -45,8 +45,6 @@ public final class MessagePanel extends JPanel {
   private final DefaultListModel<String> messageListModel = new DefaultListModel<>();
   private final JList<String> messageList = new JList<>(messageListModel);
 
-  private final long POLLING_PERIOD_MS = 1000;
-  private final long POLLING_DELAY_MS = 0;
   private final ClientContext clientContext;
 
   public MessagePanel(ClientContext clientContext) {
@@ -227,23 +225,11 @@ public final class MessagePanel extends JPanel {
     getAllMessages();
   }
 
-  // Update the list of messages
-  public void updateMessages(){
-    // Remember what message is selected
-    final String selected = messageList.getSelectedValue();
+  // Populate ListModel - updates display objects.
+  private void getNewMessages(ConversationSummary conversation) {
 
     // Get new messages
     clientContext.message.updateMessages(false);
-
-    // Update the message display panel
-    MessagePanel.this.getNewMessages();
-
-    // Reselect the message
-    messageList.setSelectedValue(selected, false);
-  }
-
-  // Populate ListModel - updates display objects.
-  private void getNewMessages(ConversationSummary conversation) {
 
     // Get all of the messages and store them in an ArrayList
     ArrayList<String> messages = new ArrayList<>();
@@ -280,7 +266,7 @@ public final class MessagePanel extends JPanel {
   }
 
   // Default conversation is current conversation
-  private void getNewMessages() {
+  public void getNewMessages() {
     getNewMessages(clientContext.conversation.getCurrent());
   }
 

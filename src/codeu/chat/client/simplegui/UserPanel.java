@@ -194,20 +194,8 @@ public final class UserPanel extends JPanel {
     getAllUsers();
   }
 
-  // Update the list of users
-  public void updateUsers(){
-    // Remember what user was selected
-    final String selected = userList.getSelectedValue();
-
-    // Update the user display panel
-    UserPanel.this.getNewUsers();
-
-    // Reselect the user
-    userList.setSelectedValue(selected, false);
-  }
-
   // Populate ListModel - updates display objects.
-  private void getNewUsers() {
+  public void getNewUsers() {
 
     // Get all of the users
     clientContext.user.updateUsers();

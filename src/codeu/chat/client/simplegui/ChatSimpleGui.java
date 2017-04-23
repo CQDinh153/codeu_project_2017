@@ -169,9 +169,9 @@ public final class ChatSimpleGui {
 		pollingTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				messagesViewPanel.updateMessages();
-				usersViewPanel.updateUsers();
-				conversationsViewPanel.updateConversations();
+				messagesViewPanel.getNewMessages();
+				usersViewPanel.getNewUsers();
+				conversationsViewPanel.getNewConversations();
 			}
 		}, POLLING_DELAY_MS, POLLING_PERIOD_MS);
 	}

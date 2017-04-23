@@ -32,8 +32,6 @@ import codeu.chat.common.ConversationSummary;
 @SuppressWarnings("serial")
 public final class ConversationPanel extends JPanel {
 
-  private final long POLLING_PERIOD_MS = 1000;
-  private final long POLLING_DELAY_MS = 0;
   private final ClientContext clientContext;
   private final MessagePanel messagePanel;
   private final DefaultListModel<String> convListModel = new DefaultListModel<>();
@@ -165,33 +163,10 @@ public final class ConversationPanel extends JPanel {
     });
 
     getAllConversations();
-
-    // Poll the server for updates
-    Timer userUpdateTimer = new Timer();
-    userUpdateTimer.schedule(new TimerTask() {
-      @Override
-      public void run() {
-
-
-
-      }
-    }, POLLING_DELAY_MS, POLLING_PERIOD_MS);
-  }
-
-  // Update the list of conversations
-  public void updateConversations(){
-    // Remember what conversation was selected
-    final String selected = conversationList.getSelectedValue();
-
-    // Update the conversation display panel
-    ConversationPanel.this.getNewConversations();
-
-    // Reselect the conversation
-    conversationList.setSelectedValue(selected, false);
   }
 
   // Populate ListModel - updates display objects.
-  private void getNewConversations() {
+  public void getNewConversations() {
 
     // Get all of the conversations
     clientContext.conversation.updateAllConversations(false);
