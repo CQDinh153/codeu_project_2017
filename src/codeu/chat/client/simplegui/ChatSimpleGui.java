@@ -31,6 +31,7 @@ import codeu.chat.util.Logger;
 // Chat - top-level client application - Java Simple GUI (using Java Swing)
 public final class ChatSimpleGui {
 
+
   private final long POLLING_PERIOD_MS = 1000;
   private final long POLLING_DELAY_MS = 0;
 
@@ -68,13 +69,12 @@ public final class ChatSimpleGui {
 
   // Initialize the GUI
   private void initialize() {
-
-		/* modifies look and feel of GUI */
-    try {
-      UIManager.LookAndFeelInfo[] laf = UIManager.getInstalledLookAndFeels();
+    /* modifies look and feel of GUI */
+    try{
+      UIManager.LookAndFeelInfo[] laf=UIManager.getInstalledLookAndFeels();
 
       UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-    } catch (Exception e) {
+    }catch(Exception e){
       System.out.println("Problems editing the look and feel");
       System.exit(-1);
     }
@@ -86,7 +86,7 @@ public final class ChatSimpleGui {
     mainFrame.setSize(790, 500);
     mainFrame.setLocation(300, 300);
 
-		/* Adds a menu bar with exit and sign-in options */
+    /* Adds a menu bar with exit and sign-in options */
     JMenuBar menuBar = new JMenuBar();
 
     JMenu userMenu = new JMenu("Options");
@@ -98,7 +98,8 @@ public final class ChatSimpleGui {
     menuBar.add(userMenu);
     mainFrame.setJMenuBar(menuBar);
 
-		/* Creates "manage users" window in advance to maintain current user sign-in */
+    /* Creates "manage users" window in advance to maintain current user sign-in */
+
     JFrame popUpFrame = new JFrame("Manage Users");
     popUpFrame.setSize(400, 400);
     popUpFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -124,6 +125,7 @@ public final class ChatSimpleGui {
     jmiExit.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("Exit"))
+
           System.exit(0);
       }
     });
@@ -138,6 +140,7 @@ public final class ChatSimpleGui {
 
     // ConversationsPanel gets access to MessagesPanel
     final ConversationPanel conversationsViewPanel = new ConversationPanel(clientContext, messagesViewPanel);
+
     conversationsViewPanel.setBorder(paneBorder());
     final GridBagConstraints conversationViewC = new GridBagConstraints();
 

@@ -40,6 +40,7 @@ public final class MessagePanel extends JPanel {
   // These objects are modified by the Conversation Panel.
   private final JLabel messageOwnerLabel = new JLabel("Owner:", JLabel.RIGHT);
   private final JLabel messageConversationLabel = new JLabel("Conversation:", JLabel.LEFT);
+
   // messageListModel is an instance variable so Conversation panel
   // can update it.
   private final DefaultListModel<String> messageListModel = new DefaultListModel<>();
@@ -56,14 +57,12 @@ public final class MessagePanel extends JPanel {
   // External agent calls this to trigger an update of this panel's contents.
   public void update(ConversationSummary owningConversation) {
 
-    final User u = (owningConversation == null) ?
-      null :
-      clientContext.user.lookup(owningConversation.owner);
+    final User u = (owningConversation == null) ? null : clientContext.user.lookup(owningConversation.owner);
 
     messageOwnerLabel.setText("Owner: " +
-      ((u == null) ?
-        ((owningConversation == null) ? "" : owningConversation.owner) :
-        u.name));
+      ((u == null) ? (
+        (owningConversation == null) ? "" : owningConversation.owner
+      ) : u.name));
 
     messageConversationLabel.setText("Conversation: " +
       (owningConversation == null ? "" : owningConversation.title));
@@ -111,6 +110,10 @@ public final class MessagePanel extends JPanel {
     final JPanel listShowPanel = new JPanel();
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
+    // messageListModel is an instance variable so Conversation panel
+    // can update it.
+    final JList<String> messageList = new JList<>(messageListModel);
+
     messageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     messageList.setVisibleRowCount(15);
     messageList.setSelectedIndex(-1);
@@ -124,12 +127,13 @@ public final class MessagePanel extends JPanel {
     final JPanel buttonPanel = new JPanel();
     final GridBagConstraints buttonPanelC = new GridBagConstraints();
 
-		/* area for user to type in messages */
+    /* area for user to type in messages */
+
     final JTextField messageField = new JTextField(60);
     buttonPanel.add(messageField);
     messageField.setEditable(true);
 
-		/* allows user to hit enter key to submit a chat message*/
+    /* allows user to hit enter key to submit a chat message*/
     messageField.addKeyListener(new KeyListener() {
       public void keyPressed(KeyEvent e) {
         if (e.getKeyChar() == KeyEvent.VK_ENTER) {
@@ -152,7 +156,6 @@ public final class MessagePanel extends JPanel {
               verticalScroll.setValue(verticalScroll.getMaximum());
             }
           }
-
         }
       }
 
@@ -207,9 +210,9 @@ public final class MessagePanel extends JPanel {
         } else {
           if (messageField.getText() != null && messageField.getText().length() > 0) {
             clientContext.message.addMessage(
-              clientContext.user.getCurrent().id,
-              clientContext.conversation.getCurrentId(),
-              messageField.getText());
+                clientContext.user.getCurrent().id,
+                clientContext.conversation.getCurrentId(),
+                messageField.getText());
             MessagePanel.this.getAllMessages();
             messageField.setText("");
 
