@@ -21,6 +21,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.TimerTask;
 import javax.swing.*;
 import java.util.Timer;
@@ -38,12 +40,13 @@ public final class MessagePanel extends JPanel {
   // These objects are modified by the Conversation Panel.
   private final JLabel messageOwnerLabel = new JLabel("Owner:", JLabel.RIGHT);
   private final JLabel messageConversationLabel = new JLabel("Conversation:", JLabel.LEFT);
-  private final DefaultListModel<String> messageListModel = new DefaultListModel<>();
 
-  private final long POLLING_PERIOD_MS = 1000;
-  private final long POLLING_DELAY_MS = 0;
+  // messageListModel is an instance variable so Conversation panel
+  // can update it.
+  private final DefaultListModel<String> messageListModel = new DefaultListModel<>();
+  private final JList<String> messageList = new JList<>(messageListModel);
+
   private final ClientContext clientContext;
-  private Message lastMessage;
 
   public MessagePanel(ClientContext clientContext) {
     super(new GridBagLayout());
@@ -54,19 +57,17 @@ public final class MessagePanel extends JPanel {
   // External agent calls this to trigger an update of this panel's contents.
   public void update(ConversationSummary owningConversation) {
 
-    final User u = (owningConversation == null) ?
-        null :
-          clientContext.user.lookup(owningConversation.owner);
+    final User u = (owningConversation == null) ? null : clientContext.user.lookup(owningConversation.owner);
 
     messageOwnerLabel.setText("Owner: " +
-        ((u == null) ?
-            ((owningConversation == null) ? "" : owningConversation.owner) :
-              u.name));
+      ((u == null) ? (
+        (owningConversation == null) ? "" : owningConversation.owner
+      ) : u.name));
 
     messageConversationLabel.setText("Conversation: " +
-        (owningConversation == null ? "" : owningConversation.title));
+      (owningConversation == null ? "" : owningConversation.title));
 
-    getAllMessages(owningConversation, true);
+    getAllMessages(owningConversation);
   }
 
   private void initialize() {
@@ -112,6 +113,7 @@ public final class MessagePanel extends JPanel {
     // messageListModel is an instance variable so Conversation panel
     // can update it.
     final JList<String> messageList = new JList<>(messageListModel);
+
     messageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     messageList.setVisibleRowCount(15);
     messageList.setSelectedIndex(-1);
@@ -126,30 +128,27 @@ public final class MessagePanel extends JPanel {
     final GridBagConstraints buttonPanelC = new GridBagConstraints();
 
     /* area for user to type in messages */
+
     final JTextField messageField = new JTextField(60);
     buttonPanel.add(messageField);
     messageField.setEditable(true);
 
     /* allows user to hit enter key to submit a chat message*/
     messageField.addKeyListener(new KeyListener() {
-      public void keyPressed(KeyEvent e){
-        if(e.getKeyChar() == KeyEvent.VK_ENTER){
+      public void keyPressed(KeyEvent e) {
+        if (e.getKeyChar() == KeyEvent.VK_ENTER) {
 
           if (!clientContext.user.hasCurrent()) {
             JOptionPane.showMessageDialog(MessagePanel.this, "You are not signed in.");
-          }
-
-          else if (!clientContext.conversation.hasCurrent()) {
+          } else if (!clientContext.conversation.hasCurrent()) {
             JOptionPane.showMessageDialog(MessagePanel.this, "You must select a conversation.");
-          }
-
-          else {
+          } else {
             if (messageField.getText() != null && messageField.getText().length() > 0) {
               clientContext.message.addMessage(
-                  clientContext.user.getCurrent().id,
-                  clientContext.conversation.getCurrentId(),
-                  messageField.getText());
-              MessagePanel.this.getAllMessages(clientContext.conversation.getCurrent(), true);
+                clientContext.user.getCurrent().id,
+                clientContext.conversation.getCurrentId(),
+                messageField.getText());
+              MessagePanel.this.getAllMessages();
               messageField.setText("");
 
               // scrolls to bottom of messages panel
@@ -157,8 +156,7 @@ public final class MessagePanel extends JPanel {
               verticalScroll.setValue(verticalScroll.getMaximum());
             }
           }
-
-        }       
+        }
       }
 
       /* mandatory functions to include, left empty */
@@ -207,19 +205,15 @@ public final class MessagePanel extends JPanel {
       public void actionPerformed(ActionEvent e) {
         if (!clientContext.user.hasCurrent()) {
           JOptionPane.showMessageDialog(MessagePanel.this, "You are not signed in.");
-        }
-
-        else if (!clientContext.conversation.hasCurrent()) {
+        } else if (!clientContext.conversation.hasCurrent()) {
           JOptionPane.showMessageDialog(MessagePanel.this, "You must select a conversation.");
-        }
-
-        else {
+        } else {
           if (messageField.getText() != null && messageField.getText().length() > 0) {
             clientContext.message.addMessage(
                 clientContext.user.getCurrent().id,
                 clientContext.conversation.getCurrentId(),
                 messageField.getText());
-            MessagePanel.this.getAllMessages(clientContext.conversation.getCurrent(), true);
+            MessagePanel.this.getAllMessages();
             messageField.setText("");
 
             // scrolls to bottom of messages panel
@@ -231,67 +225,55 @@ public final class MessagePanel extends JPanel {
     });
 
     // Panel is set up. If there is a current conversation, Populate the conversation list.
-    getAllMessages(clientContext.conversation.getCurrent(), true);
-
-    // Poll the server for updates
-    Timer messageUpdateTimer = new Timer();
-    messageUpdateTimer.schedule(new TimerTask() {
-      @Override
-      public void run() {
-
-        // Remember what message is selected
-        final String selected = messageList.getSelectedValue();
-
-        // Get new messages
-        clientContext.message.updateMessages(false);
-
-        // Update the message display panel
-        MessagePanel.this.getAllMessages(clientContext.conversation.getCurrent(), false);
-
-        // Reselect the message
-        messageList.setSelectedValue(selected, false);
-
-      }
-    }, POLLING_DELAY_MS, POLLING_PERIOD_MS);
+    getAllMessages();
   }
 
-  // Populate ListModel
-  private void getAllMessages(ConversationSummary conversation, boolean replaceAll) {
+  // Populate ListModel - updates display objects.
+  private void getNewMessages(ConversationSummary conversation) {
 
-    // If reloading all messages, the panel should be empty and there is no last message displayed
-    if (replaceAll) {
-      messageListModel.clear();
-      lastMessage = null;
+    // Get new messages
+    clientContext.message.updateMessages(false);
+
+    // Get all of the messages and store them in an ArrayList
+    ArrayList<String> messages = new ArrayList<>();
+    for (final Message m : clientContext.message.getConversationContents(conversation)) {
+      // Display author name if available.  Otherwise display the author UUID.
+      final String authorName = clientContext.user.getName(m.author);
+
+      // Display message in the format Author: [Date Time]: Content
+      final String displayString = String.format("%s: [%s]: %s",
+        ((authorName == null) ? m.author : authorName), m.creation, m.content);
+      // Display the conversation's title
+      messages.add(displayString);
     }
 
-    // The most recent message that has been displayed
-    Message newLast = lastMessage;
-
-    for (final Message m : clientContext.message.getConversationContents(conversation)) {
-
-      // Display the message if it is not in the panel yet.
-      if (replaceAll
-          || lastMessage == null
-          || (m.creation.compareTo(lastMessage.creation) >= 0
-          && !m.id.equals(lastMessage.id))
-          ) {
-
-        // Display author name if available.  Otherwise display the author UUID.
-        final String authorName = clientContext.user.getName(m.author);
-
-        // Display message in the format Author: [Date Time]: Content
-        final String displayString = String.format("%s: [%s]: %s",
-            ((authorName == null) ? m.author : authorName), m.creation, m.content);
-
-        messageListModel.addElement(displayString);
-
-        // Remember the most recently displayed message
-        if (newLast == null || m.creation.compareTo(newLast.creation) > 0) {
-          newLast = m;
-        }
+    // Add any messages that are new into the display list
+    for (String message : messages) {
+      if (!messageListModel.contains(message)) {
+        messageListModel.addElement(message);
       }
     }
-    // Store the most recent message
-    lastMessage = newLast;
+
+    // Remove any messages that no longer exist
+    for (int i = 0; i < messageListModel.size(); i++) {
+      if (!messages.contains(messageListModel.getElementAt(i))) {
+        messageListModel.removeElementAt(i);
+      }
+    }
+  }
+
+  // Force the messages list to reload all of the titles
+  private void getAllMessages(ConversationSummary conversation) {
+    messageListModel.clear();
+    getNewMessages(conversation);
+  }
+
+  // Default conversation is current conversation
+  public void getNewMessages() {
+    getNewMessages(clientContext.conversation.getCurrent());
+  }
+
+  private void getAllMessages() {
+    getAllMessages(clientContext.conversation.getCurrent());
   }
 }

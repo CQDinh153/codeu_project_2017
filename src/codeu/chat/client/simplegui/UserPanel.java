@@ -31,10 +31,9 @@ import codeu.chat.common.User;
 @SuppressWarnings("serial")
 public final class UserPanel extends JPanel {
 
-  private final long POLLING_PERIOD_MS = 1000;
-  private final long POLLING_DELAY_MS = 0;
   private final ClientContext clientContext;
-  private User lastUser;
+  private final DefaultListModel<String> userListModel = new DefaultListModel<>();
+  private final JList<String> userList = new JList<>(userListModel);
 
   public UserPanel(ClientContext clientContext) {
     super(new GridBagLayout());
@@ -78,8 +77,6 @@ public final class UserPanel extends JPanel {
     final JPanel listShowPanel = new JPanel();
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
-    final DefaultListModel<String> listModel = new DefaultListModel<>();
-    final JList<String> userList = new JList<>(listModel);
     userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     userList.setVisibleRowCount(10);
     userList.setSelectedIndex(-1);
@@ -148,7 +145,7 @@ public final class UserPanel extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         final String selected = userList.getSelectedValue();
-        UserPanel.this.getAllUsers(listModel, true);
+        UserPanel.this.getAllUsers();
         userList.setSelectedValue(selected, false);
       }
     });
@@ -171,8 +168,15 @@ public final class UserPanel extends JPanel {
                 UserPanel.this, "Enter user name:", "Add User", JOptionPane.PLAIN_MESSAGE,
                 null, null, "");
         if (s != null && s.length() > 0) {
-          clientContext.user.addUser(s);
-          UserPanel.this.getAllUsers(listModel, false);
+          UserPanel.this.getAllUsers();
+          // No duplicate names are allowed
+          if (UserPanel.this.userListModel.contains(s)){
+            JOptionPane.showMessageDialog(UserPanel.this, "User already exists");
+          } else {
+            clientContext.user.addUser(s);
+            UserPanel.this.getNewUsers();
+          }
+          userList.setSelectedValue(s, true);
         }
       }
     });
@@ -187,58 +191,40 @@ public final class UserPanel extends JPanel {
       }
     });
 
-    getAllUsers(listModel, true);
-
-    // Poll the server for updates
-    java.util.Timer userUpdateTimer = new java.util.Timer();
-    userUpdateTimer.schedule(new TimerTask() {
-      @Override
-      public void run() {
-
-        // Remember what user was selected
-        final String selected = userList.getSelectedValue();
-
-        // Update the user display panel
-        UserPanel.this.getAllUsers(listModel, false);
-
-        // Reselect the user
-        userList.setSelectedValue(selected, false);
-      }
-    }, POLLING_DELAY_MS, POLLING_PERIOD_MS);
+    getAllUsers();
   }
 
-  // Swing UI: populate ListModel object - updates display objects.
-  private void getAllUsers(DefaultListModel<String> usersList, boolean replaceAll) {
+  // Populate ListModel - updates display objects.
+  public void getNewUsers() {
 
     // Get all of the users
     clientContext.user.updateUsers();
 
-    // If reloading all users, the panel should be empty and there is no last user displayed
-    if (replaceAll) {
-      usersList.clear();
-      lastUser = null;
+    // Store all of the names that are received in a HashSet
+    HashSet<String> names = new HashSet<>();
+    for (final User u : clientContext.user.getUsers()) {
+      // Display the conversation's title
+      names.add(u.name);
     }
 
-    // The most recent user that has been displayed
-    User newLast = lastUser;
-
-    for (final User u : clientContext.user.getUsers()) {
-
-      // Display the user's name if it is not in the panel yet
-      if (replaceAll
-              || lastUser == null
-              || (u.creation.compareTo(lastUser.creation) >= 0
-              && !u.id.equals(lastUser.id))) {
-
-        usersList.addElement(u.name);
-
-        // Remember the most recently displayed user
-        if (newLast == null || u.creation.compareTo(newLast.creation) >= 0) {
-          newLast = u;
-        }
+    // Add any names that are new into the display list
+    for (String name: names) {
+      if (!userListModel.contains(name)){
+        userListModel.addElement(name);
       }
     }
-    // Store the last user to be displayed
-    lastUser = newLast;
+
+    // Remove any titles that no longer exist
+    for (int i = 0; i < userListModel.size(); i++) {
+      if (!names.contains(userListModel.getElementAt(i))){
+        userListModel.removeElementAt(i);
+      }
+    }
+  }
+
+  // Force the conversations list to reload all of the titles
+  private void getAllUsers() {
+    userListModel.clear();
+    getNewUsers();
   }
 }
