@@ -17,8 +17,10 @@ package codeu.chat.client.simplegui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.*;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 
 import codeu.chat.client.ClientContext;
@@ -29,136 +31,152 @@ import codeu.chat.util.Logger;
 // Chat - top-level client application - Java Simple GUI (using Java Swing)
 public final class ChatSimpleGui {
 
-	private final static Logger.Log LOG = Logger.newLog(ChatSimpleGui.class);
 
-	private JFrame mainFrame;
+  private final long POLLING_PERIOD_MS = 1000;
+  private final long POLLING_DELAY_MS = 0;
 
-	private final ClientContext clientContext;
+  private final static Logger.Log LOG = Logger.newLog(ChatSimpleGui.class);
 
-	// Constructor - sets up the Chat Application
-	public ChatSimpleGui(Controller controller, View view) {
-		clientContext = new ClientContext(controller, view);
-	}
+  private JFrame mainFrame;
 
-	// Run the GUI client
-	public void run() {
+  private final ClientContext clientContext;
 
-		try {
+  // Constructor - sets up the Chat Application
+  public ChatSimpleGui(Controller controller, View view) {
+    clientContext = new ClientContext(controller, view);
+  }
 
-			initialize();
-			mainFrame.setVisible(true);
+  // Run the GUI client
+  public void run() {
 
-		} catch (Exception ex) {
-			System.out.println("ERROR: Exception in ChatSimpleGui.run. Check log for details.");
-			LOG.error(ex, "Exception in ChatSimpleGui.run");
-			System.exit(1);
-		}
-	}
+    try {
 
-	private Border paneBorder() {
-		Border outside = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
-		Border inside = BorderFactory.createEmptyBorder(8, 8, 8, 8);
-		return BorderFactory.createCompoundBorder(outside, inside);
-	}
+      initialize();
+      mainFrame.setVisible(true);
 
-	// Initialize the GUI
-	private void initialize() {
+    } catch (Exception ex) {
+      System.out.println("ERROR: Exception in ChatSimpleGui.run. Check log for details.");
+      LOG.error(ex, "Exception in ChatSimpleGui.run");
+      System.exit(1);
+    }
+  }
 
-		/* modifies look and feel of GUI */
-		try{
-			UIManager.LookAndFeelInfo[] laf=UIManager.getInstalledLookAndFeels();
-			
-			UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-		}catch(Exception e){
-			System.out.println("Problems editing the look and feel");
-			System.exit(-1);
-		}
-		
-		// Outermost frame.
-		// NOTE: may have tweak size, or place in scrollable panel.
-		mainFrame = new JFrame("Chat");
-		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		mainFrame.setSize(790, 500);
-		mainFrame.setLocation(300, 300);
+  private Border paneBorder() {
+    Border outside = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
+    Border inside = BorderFactory.createEmptyBorder(8, 8, 8, 8);
+    return BorderFactory.createCompoundBorder(outside, inside);
+  }
 
-		/* Adds a menu bar with exit and sign-in options */ 
-		JMenuBar menuBar = new JMenuBar();
+  // Initialize the GUI
+  private void initialize() {
+    /* modifies look and feel of GUI */
+    try{
+      UIManager.LookAndFeelInfo[] laf=UIManager.getInstalledLookAndFeels();
 
-		JMenu userMenu = new JMenu("Options");
-		JMenuItem jmiSwitchUser = new JMenuItem("Manage Users");
-		userMenu.add(jmiSwitchUser);
-		JMenuItem jmiExit = new JMenuItem("Exit");
-		userMenu.add(jmiExit);
+      UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+    }catch(Exception e){
+      System.out.println("Problems editing the look and feel");
+      System.exit(-1);
+    }
 
-		menuBar.add(userMenu);
-		mainFrame.setJMenuBar(menuBar);
-		
-		/* Creates "manage users" window in advance to maintain current user sign-in */
-		JFrame popUpFrame = new JFrame("Manage Users");
-		popUpFrame.setSize(400, 400);
-		popUpFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-		popUpFrame.setLocation(360, 360);
-		
+    // Outermost frame.
+    // NOTE: may have tweak size, or place in scrollable panel.
+    mainFrame = new JFrame("Chat");
+    mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    mainFrame.setSize(790, 500);
+    mainFrame.setLocation(300, 300);
+
+    /* Adds a menu bar with exit and sign-in options */
+    JMenuBar menuBar = new JMenuBar();
+
+    JMenu userMenu = new JMenu("Options");
+    JMenuItem jmiSwitchUser = new JMenuItem("Manage Users");
+    userMenu.add(jmiSwitchUser);
+    JMenuItem jmiExit = new JMenuItem("Exit");
+    userMenu.add(jmiExit);
+
+    menuBar.add(userMenu);
+    mainFrame.setJMenuBar(menuBar);
+
+    /* Creates "manage users" window in advance to maintain current user sign-in */
+
+    JFrame popUpFrame = new JFrame("Manage Users");
+    popUpFrame.setSize(400, 400);
+    popUpFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+    popUpFrame.setLocation(360, 360);
+
+    // Build main panels - Users, Conversations, Messages.
+    final UserPanel usersViewPanel = new UserPanel(clientContext);
+    usersViewPanel.setBorder(paneBorder());
+
+    popUpFrame.getContentPane().add(usersViewPanel);
+
 		/* if "manage users" option is clicked, opens up sign-in window */
-		jmiSwitchUser.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e){
-				if(e.getActionCommand().equals("Manage Users")) {
-					
-					popUpFrame.setVisible(true);
-					
-					// Build main panels - Users, Conversations, Messages.
-					final JPanel usersViewPanel = new UserPanel(clientContext);
-					usersViewPanel.setBorder(paneBorder());
-					final GridBagConstraints usersViewC = new GridBagConstraints();
-					
-					popUpFrame.getContentPane().add(usersViewPanel);
-				}
-			}
-		});
+    jmiSwitchUser.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        if (e.getActionCommand().equals("Manage Users")) {
+
+          popUpFrame.setVisible(true);
+        }
+      }
+    });
 		
 		/* allows user to close out of chat app */
-		jmiExit.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e){
-				if(e.getActionCommand().equals("Exit"))
-					System.exit(0);
-			}
-		});
+    jmiExit.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        if (e.getActionCommand().equals("Exit"))
 
-		// Main View - outermost graphics panel.
-		final JPanel mainViewPanel = new JPanel(new GridBagLayout());
-		mainViewPanel.setBorder(paneBorder());
+          System.exit(0);
+      }
+    });
 
-		final MessagePanel messagesViewPanel = new MessagePanel(clientContext);
-		messagesViewPanel.setBorder(paneBorder());
-		final GridBagConstraints messagesViewC = new GridBagConstraints();
+    // Main View - outermost graphics panel.
+    final JPanel mainViewPanel = new JPanel(new GridBagLayout());
+    mainViewPanel.setBorder(paneBorder());
 
-		// ConversationsPanel gets access to MessagesPanel
-		final JPanel conversationsViewPanel = new ConversationPanel(clientContext, messagesViewPanel);
-		conversationsViewPanel.setBorder(paneBorder());
-		final GridBagConstraints conversationViewC = new GridBagConstraints();
+    final MessagePanel messagesViewPanel = new MessagePanel(clientContext);
+    messagesViewPanel.setBorder(paneBorder());
+    final GridBagConstraints messagesViewC = new GridBagConstraints();
 
-		// Placement of main panels.
-		conversationViewC.gridx = 0;
-		conversationViewC.gridy = 0;
-		conversationViewC.gridwidth = 1;
-		conversationViewC.gridheight = 1;
-		conversationViewC.fill = GridBagConstraints.BOTH;
-		conversationViewC.weightx = 0.4;
-		conversationViewC.weighty = 0.5;
+    // ConversationsPanel gets access to MessagesPanel
+    final ConversationPanel conversationsViewPanel = new ConversationPanel(clientContext, messagesViewPanel);
 
-		messagesViewC.gridx = 1;
-		messagesViewC.gridy = 0;
-		messagesViewC.gridwidth = 1;
-		messagesViewC.gridheight = 1;
-		messagesViewC.fill = GridBagConstraints.BOTH;
-		messagesViewC.weightx = 0.6;
-		messagesViewC.weighty = 0.5;
+    conversationsViewPanel.setBorder(paneBorder());
+    final GridBagConstraints conversationViewC = new GridBagConstraints();
 
-		mainViewPanel.add(conversationsViewPanel, conversationViewC);
-		mainViewPanel.add(messagesViewPanel, messagesViewC);
+    // Placement of main panels.
+    conversationViewC.gridx = 0;
+    conversationViewC.gridy = 0;
+    conversationViewC.gridwidth = 1;
+    conversationViewC.gridheight = 1;
+    conversationViewC.fill = GridBagConstraints.BOTH;
+    conversationViewC.weightx = 0.4;
+    conversationViewC.weighty = 0.5;
 
-		mainFrame.add(mainViewPanel);
-		mainFrame.pack();
-	}
+    messagesViewC.gridx = 1;
+    messagesViewC.gridy = 0;
+    messagesViewC.gridwidth = 1;
+    messagesViewC.gridheight = 1;
+    messagesViewC.fill = GridBagConstraints.BOTH;
+    messagesViewC.weightx = 0.6;
+    messagesViewC.weighty = 0.5;
+
+    mainViewPanel.add(conversationsViewPanel, conversationViewC);
+    mainViewPanel.add(messagesViewPanel, messagesViewC);
+
+    mainFrame.add(mainViewPanel);
+    mainFrame.pack();
+
+    // Poll the server for updates
+    java.util.Timer pollingTimer = new java.util.Timer();
+    pollingTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        messagesViewPanel.getNewMessages();
+        usersViewPanel.getNewUsers();
+        conversationsViewPanel.getNewConversations();
+      }
+    }, POLLING_DELAY_MS, POLLING_PERIOD_MS);
+  }
 
 }
