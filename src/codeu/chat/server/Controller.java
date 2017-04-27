@@ -32,9 +32,11 @@ public final class Controller implements RawController, BasicController {
 
   private final Model model;
   private final Uuid.Generator uuidGenerator;
+  public final Uuid serverId;
 
   public Controller(Uuid serverId, Model model) {
     this.model = model;
+    this.serverId = serverId;
     this.uuidGenerator = new RandomUuidGenerator(serverId, System.currentTimeMillis());
   }
 
@@ -63,7 +65,7 @@ public final class Controller implements RawController, BasicController {
 
     if (foundUser != null && foundConversation != null && isIdFree(id)) {
 
-      message = new Message(id, Uuids.NULL, Uuids.NULL, creationTime, author, body);
+      message = new Message(id, Uuids.NULL, Uuids.NULL, creationTime, foundUser.id, body);
       model.add(message);
       LOG.info("Message added: %s", message.id);
 
@@ -138,7 +140,7 @@ public final class Controller implements RawController, BasicController {
     Conversation conversation = null;
 
     if (foundOwner != null && isIdFree(id)) {
-      conversation = new Conversation(id, owner, creationTime, title);
+      conversation = new Conversation(id, foundOwner.id, creationTime, title);
       model.add(conversation);
 
       LOG.info("Conversation added: " + conversation.id);
