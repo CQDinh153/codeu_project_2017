@@ -19,8 +19,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.util.HashSet;
-import java.util.Timer;
-import java.util.TimerTask;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -125,6 +123,7 @@ public final class ConversationPanel extends JPanel {
     addButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        ConversationPanel.this.getNewConversations();
         if (clientContext.user.hasCurrent()) {
           final String s = (String) JOptionPane.showInputDialog(
             ConversationPanel.this, "Enter title:", "Add Conversation", JOptionPane.PLAIN_MESSAGE,
@@ -157,7 +156,8 @@ public final class ConversationPanel extends JPanel {
 
           clientContext.conversation.setCurrent(cs);
 
-          messagePanel.update(cs);
+
+          messagePanel.update(clientContext.conversation.getCurrent());
         }
       }
     });
@@ -174,15 +174,13 @@ public final class ConversationPanel extends JPanel {
     // Store all of the titles that are received in a HashSet
     HashSet<String> titles = new HashSet<>();
     for (final ConversationSummary conv : clientContext.conversation.getConversationSummaries()) {
-      // Display the conversation's title
-      titles.add(conv.title);
-    }
-
-    // Add any titles that are new into the display list
-    for (String title: titles) {
-      if (!convListModel.contains(title)){
-        convListModel.addElement(title);
+      // If the title has not been displayed, display it
+      if (!convListModel.contains(conv.title)){
+        convListModel.addElement(conv.title);
       }
+
+      // Remember that this title has been displayed
+      titles.add(conv.title);
     }
 
     // Remove any titles that no longer exist
@@ -202,7 +200,6 @@ public final class ConversationPanel extends JPanel {
   // Locate the Conversation object for a selected title string.
   // index handles possible duplicate titles.
   private ConversationSummary lookupByTitle(String title, int index) {
-
     int localIndex = 0;
     for (final ConversationSummary cs : clientContext.conversation.getConversationSummaries()) {
       if ((localIndex >= index) && cs.title.equals(title)) {

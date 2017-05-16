@@ -19,13 +19,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.TimerTask;
 import javax.swing.*;
-import java.util.Timer;
 
 import codeu.chat.client.ClientContext;
 import codeu.chat.common.ConversationSummary;
@@ -200,6 +195,7 @@ public final class MessagePanel extends JPanel {
     addButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        MessagePanel.this.getNewMessages();
         if (!clientContext.user.hasCurrent()) {
           JOptionPane.showMessageDialog(MessagePanel.this, "You are not signed in.");
         } else if (!clientContext.conversation.hasCurrent()) {
@@ -232,7 +228,7 @@ public final class MessagePanel extends JPanel {
     clientContext.message.updateMessages(false);
 
     // Get all of the messages and store them in an ArrayList
-    ArrayList<String> messages = new ArrayList<>();
+    HashSet<String> messages = new HashSet<>();
     for (final Message m : clientContext.message.getConversationContents(conversation)) {
       // Display author name if available.  Otherwise display the author UUID.
       final String authorName = clientContext.user.getName(m.author);
@@ -240,15 +236,14 @@ public final class MessagePanel extends JPanel {
       // Display message in the format Author: [Date Time]: Content
       final String displayString = String.format("%s: [%s]: %s",
         ((authorName == null) ? m.author : authorName), m.creation, m.content);
-      // Display the conversation's title
-      messages.add(displayString);
-    }
 
-    // Add any messages that are new into the display list
-    for (String message : messages) {
-      if (!messageListModel.contains(message)) {
-        messageListModel.addElement(message);
+      // If this message has not been displayed, display it
+      if (!messageListModel.contains(displayString)) {
+        messageListModel.addElement(displayString);
       }
+
+      // Remember that this message has been displayed
+      messages.add(displayString);
     }
 
     // Remove any messages that no longer exist
@@ -262,6 +257,7 @@ public final class MessagePanel extends JPanel {
   // Force the messages list to reload all of the titles
   private void getAllMessages(ConversationSummary conversation) {
     messageListModel.clear();
+    clientContext.message.updateMessages(true);
     getNewMessages(conversation);
   }
 

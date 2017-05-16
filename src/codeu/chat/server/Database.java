@@ -7,6 +7,33 @@ import codeu.chat.util.Logger;
 import java.sql.*;
 
 public class Database {
+  // The column specifications for the tables
+  // Uuids are stored as strings
+  // Times are stored as their representation in ms in Integers since SQLite has up to 64 bit integers
+  public static final String usersTable = "users(" +
+    "id INTEGER PRIMARY KEY NOT NULL, " +
+    "name TEXT NOT NULL, " +
+    "creation INTEGER NOT NULL" +
+    ")";
+  public static final String conversationsTable = "conversations(" +
+    "id INTEGER PRIMARY KEY NOT NULL, " +
+    "owner INTEGER NOT NULL, " +
+    "creation INTEGER NOT NULL, " +
+    "title TEXT NOT NULL" +
+    ")";
+  public static final String messagesTable = "messages(" +
+    "id INTEGER PRIMARY KEY NOT NULL, " +
+    "creation INTEGER NOT NULL, " +
+    "author INTEGER NOT NULL, " +
+    "conversation INTEGER NOT NULL, " +
+    "content TEXT NOT NULL" +
+    ")";
+
+  private PreparedStatement userStatement;
+  private PreparedStatement conversationStatement;
+  private PreparedStatement messageStatement;
+  private Statement stmt;
+
   private Connection conn;
 
   private static final Logger.Log LOG = Logger.newLog(Database.class);
@@ -27,201 +54,67 @@ public class Database {
 
         LOG.info("Connection to SQLite Database established");
 
-        // The column specifications for the tables
-        // Uuids are stored as strings
-        // Times are stored as their representation in ms in Integers since SQLite has up to 64 bit integers
-        String userColumns =
-          "id TEXT PRIMARY KEY NOT NULL, " +
-            "name TEXT NOT NULL, " +
-            "creation INTEGER NOT NULL";
+        // Create a Statement object to execute queries from
+        stmt = conn.createStatement();
 
-        String conversationColumns =
-          "id TEXT PRIMARY KEY NOT NULL, " +
-            "owner TEXT NOT NULL, " +
-            "creation INTEGER NOT NULL, " +
-            "title TEXT NOT NULL";
-
-        String messageColumns =
-          "id TEXT PRIMARY KEY NOT NULL, " +
-            "creation INTEGER NOT NULL, " +
-            "author TEXT NOT NULL, " +
-            "conversation TEXT NOT NULL, " +
-            "content TEXT NOT NULL";
-
-        ensureTableExists("users", userColumns);
-        ensureTableExists("conversations", conversationColumns);
-        ensureTableExists("messages", messageColumns);
+        // Create PreparedStatement objects that precompile the queries to add each type of object to the database
+        messageStatement = conn.prepareStatement("INSERT INTO messages(id, creation, author, conversation, content) VALUES (?, ?, ?, ?, ?)");
+        conversationStatement = conn.prepareStatement("INSERT INTO conversations(id, owner, creation, title) VALUES (?, ?, ?, ?)");
+        userStatement = conn.prepareStatement("INSERT INTO users(id, name, creation) VALUES (?, ?, ?)");
 
       } catch (SQLException ex) {
 
-        LOG.error("An exception occurred while connecting to the database");
+        LOG.error("Could not connect to the database");
         LOG.error(ex.getMessage());
+        System.exit(1); // Exit the program
 
       }
     } catch (ClassNotFoundException ex) {
-      LOG.error("An exception occurred while loading the JDBC driver");
+
+      LOG.error("Could not load the JDBC driver");
       LOG.error(ex.getMessage());
-    }
-  }
-
-  // This function will create a table if it does not exist
-  // If the table exists, this function does nothing
-  private boolean ensureTableExists(String name, String columnSpec) {
-    // Build the SQL command
-    String sql = "CREATE TABLE IF NOT EXISTS " + name + " (" + columnSpec + ")";
-
-    // Execute the command
-    try {
-
-      Statement stmt = conn.createStatement();
-      return stmt.execute(sql);
-
-    } catch (SQLException ex) {
-
-      LOG.error("An exception occurred while creating the " + name + "table");
-      LOG.error(ex.getMessage());
-
-    }
-
-    // This should only happen if an exception occurred
-    return false;
-  }
-
-  // This function loads all of the values in a database in the correct order
-  public void load(Controller controller) {
-    loadUsers(controller);
-    loadConversations(controller);
-    loadMessages(controller);
-  }
-
-  // Load all of the users from the database into the controler
-  private void loadUsers(Controller controller) {
-
-    String sql = "SELECT * FROM users";
-
-    try {
-
-      // Get the users
-      Statement stmt = conn.createStatement();
-      ResultSet users = stmt.executeQuery(sql);
-
-      // Advance the row until there are no more
-      while (users.next()) {
-
-        // Get a Uuid from the string in the database that is registered to this server id
-        Uuid id = Uuids.fromString(controller.serverId, users.getString("id"));
-
-        // Get the username from the database
-        String name = users.getString("name");
-
-        // Get the creation time from the database
-        Time creation = Time.fromMs(users.getLong("creation"));
-
-        // Create the user with the controller
-        controller.newUser(id, name, creation);
-      }
-
-    } catch (SQLException ex) {
-
-      LOG.error("An exception occurred while loading users");
-      LOG.error(ex.getMessage());
+      System.exit(1); // Exit the program
 
     }
   }
 
-  private void loadConversations(Controller controller) {
-
-    String sql = "SELECT * FROM conversations";
-
-    try {
-
-      // Get the users
-      Statement stmt = conn.createStatement();
-      ResultSet conversations = stmt.executeQuery(sql);
-
-      // Advance the row until there are no more
-      while (conversations.next()) {
-
-        // Get a Uuid from the string in the database that is registered to this server id
-        Uuid id = Uuids.fromString(controller.serverId, conversations.getString("id"));
-
-        // Get the conversation title from the database
-        String title = conversations.getString("title");
-
-        // Get the owner's Uuid from the string in the database that is registered to this server id
-        Uuid owner = Uuids.fromString(controller.serverId, conversations.getString("id"));
-
-        // Get the creation time from the database
-        Time creation = Time.fromMs(conversations.getLong("creation"));
-
-        // Create the conversation with the controller
-        controller.newConversation(id, title, owner, creation);
-      }
-
-    } catch (SQLException ex) {
-
-      LOG.error("An exception occurred while loading conversations");
-      LOG.error(ex.getMessage());
-
-    }
+  // Runs a SQL query on the database and returns
+  // true if the result is a ResultSet
+  // false if it is an update count or there are not results
+  // Only implemented for completeness with execureQuery and executeUpdate
+  public boolean execute(String query) throws SQLException{
+    return stmt.execute(query);
   }
 
-  private void loadMessages(Controller controller) {
-
-    String sql = "SELECT * FROM messages";
-
-    try {
-
-      // Get the users
-      Statement stmt = conn.createStatement();
-      ResultSet messages = stmt.executeQuery(sql);
-
-      // Advance the row until there are no more
-      while (messages.next()) {
-
-        // Get a Uuid from the string in the database that is registered to this server id
-        Uuid id = Uuids.fromString(controller.serverId, messages.getString("id"));
-
-        // Get the creation time from the database
-        Time creation = Time.fromMs(messages.getLong("creation"));
-
-        // Get the author's Uuid from the string in the database that is registered to this server id
-        Uuid author = Uuids.fromString(controller.serverId, messages.getString("author"));
-
-        // Get the conversation's Uuid from the string in the database that is registered to this server id
-        Uuid conversation = Uuids.fromString(controller.serverId, messages.getString("conversation"));
-
-        // Get the message's content from the database
-        String content = messages.getString("content");
-
-        // Create the message with the controller
-        controller.newMessage(id, author, conversation, content, creation);
-      }
-
-    } catch (SQLException ex) {
-
-      LOG.error("An exception occurred while loading messages");
-      LOG.error(ex.getMessage());
-
-    }
+  // Runs a SQL query on the database and returns the ResultSet that the database returns
+  // Use this to run queries like SELECT
+  public ResultSet executeQuery(String query) throws SQLException{
+    return stmt.executeQuery(query);
   }
 
-  public void saveMessage(Message msg, Uuid conversation) {
-    String sql = "INSERT INTO messages(id, creation, author, conversation, content) VALUES (?, ?, ?, ?, ?)";
+  // Runs a SQL query on the database and returns the number of rows that were affected
+  // Use this to run INSERT, UPDATE, or DELETE queries or queries that return nothing
+  // If the query returns nothing, this returns 0
+  public int executeUpdate(String query) throws SQLException{
+    return stmt.executeUpdate(query);
+  }
+
+  // Save a message into the database
+  // The conversation id is necessary to remember which conversation the message is in
+  public boolean saveMessage(Message msg, Uuid conversation) {
     try {
-      PreparedStatement stmt = conn.prepareStatement(sql);
       // Set the id
-      stmt.setString(1, msg.id.toString());
+      messageStatement.setInt(1, msg.id.id());
       // Set the creation time
-      stmt.setLong(2, msg.creation.inMs());
+      messageStatement.setLong(2, msg.creation.inMs());
       // Set the author id
-      stmt.setString(3, msg.author.toString());
+      messageStatement.setInt(3, msg.author.id());
       // Set the conversation id
-      stmt.setString(4, conversation.toString());
+      messageStatement.setInt(4, conversation.id());
       // Set the content string
-      stmt.setString(5, msg.content);
+      messageStatement.setString(5, msg.content);
       // Update the row
-      stmt.executeUpdate();
+      return messageStatement.executeUpdate() > 0;
 
     } catch (SQLException ex) {
 
@@ -229,22 +122,22 @@ public class Database {
       LOG.error(ex.getMessage());
 
     }
+    return false;
   }
 
-  public void saveConversation(Conversation conversation) {
-    String sql = "INSERT INTO conversations(id, owner, creation, title) VALUES (?, ?, ?, ?)";
+  // Save a conversation into the database
+  public boolean saveConversation(Conversation conversation) {
     try {
-      PreparedStatement stmt = conn.prepareStatement(sql);
       // Set the id
-      stmt.setString(1, conversation.id.toString());
+      conversationStatement.setInt(1, conversation.id.id());
       // Set the owner id
-      stmt.setString(2, conversation.owner.toString());
+      conversationStatement.setInt(2, conversation.owner.id());
       // Set the creation time
-      stmt.setLong(3, conversation.creation.inMs());
+      conversationStatement.setLong(3, conversation.creation.inMs());
       // Set the conversation title
-      stmt.setString(4, conversation.title);
+      conversationStatement.setString(4, conversation.title);
       // Update the row
-      stmt.executeUpdate();
+      return conversationStatement.executeUpdate() > 0;
 
     } catch (SQLException ex) {
 
@@ -252,23 +145,21 @@ public class Database {
       LOG.error(ex.getMessage());
 
     }
+    return false;
   }
 
-  public void saveUser(User user) {
-
-    String sql = "INSERT INTO users(id, name, creation) VALUES (?, ?, ?)";
+  // Save a user into the database
+  public boolean saveUser(User user) {
 
     try {
-
-      PreparedStatement stmt = conn.prepareStatement(sql);
       // Set the id
-      stmt.setString(1, user.id.toString());
+      userStatement.setInt(1, user.id.id());
       // Set the username
-      stmt.setString(2, user.name);
+      userStatement.setString(2, user.name);
       // Set the creation time
-      stmt.setLong(3, user.creation.inMs());
+      userStatement.setLong(3, user.creation.inMs());
       // Update the row
-      stmt.executeUpdate();
+      return userStatement.executeUpdate() > 0;
 
     } catch (SQLException ex) {
 
@@ -276,5 +167,6 @@ public class Database {
       LOG.error(ex.getMessage());
 
     }
+    return false;
   }
 }

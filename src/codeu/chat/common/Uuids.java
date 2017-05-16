@@ -181,11 +181,7 @@ public final class Uuids {
   //
   // Create a uuid from a sting.
   public static Uuid fromString(String string) {
-    return fromString(null, string);
-  }
-
-  public static Uuid fromString(Uuid root, String string) {
-    return fromString(root, string.split("\\."), 0);
+    return fromString(null, string.split("\\."), 0);
   }
 
   private static Uuid fromString(final Uuid root, String[] tokens, int index) {

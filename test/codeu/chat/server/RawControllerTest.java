@@ -28,7 +28,10 @@ import codeu.chat.common.Uuids;
 
 public final class RawControllerTest {
 
+  private static String databaseFilename = "serverState.db";
+
   private Model model;
+  private Database database;
   private RawController controller;
 
   private Uuid userId;
@@ -38,7 +41,8 @@ public final class RawControllerTest {
   @Before
   public void doBefore() {
     model = new Model();
-    controller = new Controller(Uuids.NULL, model);
+    database = new Database(databaseFilename);
+    controller = new Controller(Uuids.NULL, model, database);
 
     userId = newTestId(1);
     conversationId = newTestId(2);

@@ -15,24 +15,27 @@
 package codeu.chat.server;
 
 import static org.junit.Assert.*;
+
+import codeu.chat.common.*;
 import org.junit.Test;
 import org.junit.Before;
 
-import codeu.chat.common.BasicController;
-import codeu.chat.common.Conversation;
-import codeu.chat.common.Message;
-import codeu.chat.common.User;
-import codeu.chat.common.Uuids;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public final class BasicControllerTest {
 
+  private static String databaseFilename = "serverState.db";
+
   private Model model;
+  private Database database;
   private BasicController controller;
 
   @Before
   public void doBefore() {
     model = new Model();
-    controller = new Controller(Uuids.NULL, model);
+    database = new Database(databaseFilename);
+    controller = new Controller(Uuids.NULL, model, database);
   }
 
   @Test
@@ -43,6 +46,7 @@ public final class BasicControllerTest {
     assertFalse(
         "Check that user has a valid reference",
         user == null);
+
   }
 
   @Test

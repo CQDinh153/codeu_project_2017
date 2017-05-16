@@ -15,4 +15,4 @@
 # limitations under the License.
 
 cd './bin'
-java -classpath ".;sqlite-jdbc.jar" codeu.chat.ServerMain "100.101" "ABABAB" "2007" "serverState.db"
+java -classpath ".;sqlite-jdbc.jar" codeu.chat.DatabaseSetup "serverState.db"

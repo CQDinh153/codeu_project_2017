@@ -44,8 +44,6 @@ public final class Server {
   private final Model model = new Model();
   private final View view = new View(model);
   private final Controller controller;
-  private final Database database;
-
   private final Relay relay;
   private Uuid lastSeen = Uuids.NULL;
 
@@ -53,11 +51,8 @@ public final class Server {
 
     this.id = id;
     this.secret = Arrays.copyOf(secret, secret.length);
-    this.database = database;
-    this.controller = new Controller(id, model);
+    this.controller = new Controller(id, model, database);
     this.relay = relay;
-
-    this.database.load(this.controller);
   }
 
   public void syncWithRelay(int maxReadSize) throws Exception {
@@ -89,9 +84,6 @@ public final class Server {
       Serializers.INTEGER.write(out, NetworkCode.NEW_MESSAGE_RESPONSE);
       Serializers.nullable(Message.SERIALIZER).write(out, message);
 
-      // Save the message to the database
-      this.database.saveMessage(message, conversation);
-
       // Unlike the other calls - we need to send something the result of this
       // call to the relay. Waiting until after the server has written back to
       // the client allows the client to get the response, but the network
@@ -109,9 +101,6 @@ public final class Server {
       Serializers.INTEGER.write(out, NetworkCode.NEW_USER_RESPONSE);
       Serializers.nullable(User.SERIALIZER).write(out, user);
 
-      // Save the user to the database
-      this.database.saveUser(user);
-
     } else if (type == NetworkCode.NEW_CONVERSATION_REQUEST) {
 
       final String title = Serializers.STRING.read(in);
@@ -121,9 +110,6 @@ public final class Server {
 
       Serializers.INTEGER.write(out, NetworkCode.NEW_CONVERSATION_RESPONSE);
       Serializers.nullable(Conversation.SERIALIZER).write(out, conversation);
-
-      // Save the conversation to the database
-      this.database.saveConversation(conversation);
 
     } else if (type == NetworkCode.GET_USERS_BY_ID_REQUEST) {
 
