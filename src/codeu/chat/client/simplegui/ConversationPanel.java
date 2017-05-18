@@ -18,8 +18,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.HashSet;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -31,11 +30,10 @@ import codeu.chat.common.ConversationSummary;
 @SuppressWarnings("serial")
 public final class ConversationPanel extends JPanel {
 
-  private final long POLLING_PERIOD_MS = 1000;
-  private final long POLLING_DELAY_MS = 0;
   private final ClientContext clientContext;
   private final MessagePanel messagePanel;
-  private ConversationSummary lastConversation;
+  private final DefaultListModel<String> convListModel = new DefaultListModel<>();
+  private final JList<String> conversationList = new JList<>(convListModel);
 
   public ConversationPanel(ClientContext clientContext, MessagePanel messagePanel) {
     super(new GridBagLayout());
@@ -52,34 +50,45 @@ public final class ConversationPanel extends JPanel {
     // Title
     final JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     final GridBagConstraints titlePanelC = new GridBagConstraints();
+    titlePanel.setBackground(new Color(216, 216, 216));
     titlePanelC.gridx = 0;
     titlePanelC.gridy = 0;
     titlePanelC.anchor = GridBagConstraints.PAGE_START;
 
-    final JLabel titleLabel = new JLabel("Conversations", JLabel.LEFT);
+    final JLabel titleLabel = new JLabel("CONVERSATIONS", JLabel.LEFT);
     titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    titleLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+    titleLabel.setForeground(new Color(188, 32, 49));
     titlePanel.add(titleLabel);
 
     // Conversation list
     final JPanel listShowPanel = new JPanel();
+    listShowPanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
-    final DefaultListModel<String> listModel = new DefaultListModel<>();
-    final JList<String> conversationList = new JList<>(listModel);
     conversationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     conversationList.setVisibleRowCount(15);
     conversationList.setSelectedIndex(-1);
 
     final JScrollPane listScrollPane = new JScrollPane(conversationList);
     listShowPanel.add(listScrollPane);
-    listScrollPane.setMinimumSize(new Dimension(250, 200));
+    listScrollPane.setBackground(new Color(216, 216, 216));
+    listScrollPane.setMinimumSize(new Dimension(250, 320));
+    listScrollPane.setPreferredSize(new Dimension(250, 320));
 
     // Button bar
     final JPanel buttonPanel = new JPanel();
+    buttonPanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints buttonPanelC = new GridBagConstraints();
 
-    final JButton updateButton = new JButton("Update");
-    final JButton addButton = new JButton("Add");
+    final JButton updateButton = new JButton("update");
+    updateButton.setBackground(new Color(188, 32, 49));
+    updateButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+    updateButton.setForeground(Color.WHITE);
+    final JButton addButton = new JButton("add");
+    addButton.setBackground(new Color(188, 32, 49));
+    addButton.setForeground(Color.WHITE);
+    addButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
 
     updateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
     buttonPanel.add(updateButton);
@@ -118,7 +127,7 @@ public final class ConversationPanel extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         final String selected = conversationList.getSelectedValue();
-        ConversationPanel.this.getAllConversations(listModel, true);
+        ConversationPanel.this.getAllConversations();
         conversationList.setSelectedValue(selected, false);
       }
     });
@@ -127,13 +136,25 @@ public final class ConversationPanel extends JPanel {
     addButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        ConversationPanel.this.getNewConversations();
         if (clientContext.user.hasCurrent()) {
           final String s = (String) JOptionPane.showInputDialog(
-                  ConversationPanel.this, "Enter title:", "Add Conversation", JOptionPane.PLAIN_MESSAGE,
-                  null, null, "");
+            ConversationPanel.this, "Enter title:", "Add Conversation", JOptionPane.PLAIN_MESSAGE,
+            null, null, "");
           if (s != null && s.length() > 0) {
-            clientContext.conversation.startConversation(s, clientContext.user.getCurrent().id);
-            ConversationPanel.this.getAllConversations(listModel, true);
+            ConversationPanel.this.getAllConversations();
+            // No duplicate names are allowed
+            if (ConversationPanel.this.convListModel.contains(s)) {
+              JOptionPane.showMessageDialog(ConversationPanel.this, "Conversation already exists");
+            }
+            // conversation name length should not exceed 40 characters
+            else if (s.length() > 40) {
+              JOptionPane.showMessageDialog(ConversationPanel.this, "Max length for a conversation name is 40 characters");
+            }
+            else {
+              clientContext.conversation.startConversation(s, clientContext.user.getCurrent().id);
+              ConversationPanel.this.getNewConversations();
+            }
             conversationList.setSelectedValue(s, true);
           }
         } else {
@@ -153,71 +174,50 @@ public final class ConversationPanel extends JPanel {
 
           clientContext.conversation.setCurrent(cs);
 
-          messagePanel.update(cs);
+
+          messagePanel.update(clientContext.conversation.getCurrent());
         }
       }
     });
 
-    getAllConversations(listModel, true);
-
-    // Poll the server for updates
-    Timer userUpdateTimer = new Timer();
-    userUpdateTimer.schedule(new TimerTask() {
-      @Override
-      public void run() {
-
-        // Remember what conversation was selected
-        final String selected = conversationList.getSelectedValue();
-
-        // Update the conversation display panel
-        ConversationPanel.this.getAllConversations(listModel, false);
-
-        // Reselect the conversation
-        conversationList.setSelectedValue(selected, false);
-
-      }
-    }, POLLING_DELAY_MS, POLLING_PERIOD_MS);
+    getAllConversations();
   }
 
   // Populate ListModel - updates display objects.
-  private void getAllConversations(DefaultListModel<String> convDisplayList, boolean replaceAll) {
+  public void getNewConversations() {
 
     // Get all of the conversations
     clientContext.conversation.updateAllConversations(false);
 
-    // If reloading all conversations, the panel should be empty and there is no last conversation displayed
-    if (replaceAll) {
-      convDisplayList.clear();
-      lastConversation = null;
+    // Store all of the titles that are received in a HashSet
+    HashSet<String> titles = new HashSet<>();
+    for (final ConversationSummary conv : clientContext.conversation.getConversationSummaries()) {
+      // If the title has not been displayed, display it
+      if (!convListModel.contains(conv.title)){
+        convListModel.addElement(conv.title);
+      }
+
+      // Remember that this title has been displayed
+      titles.add(conv.title);
     }
 
-    // The last conversation to be displayed
-    ConversationSummary newLast = lastConversation;
-
-    for (final ConversationSummary conv : clientContext.conversation.getConversationSummaries()) {
-
-      // Display the conversation's title if it isn't in the panel yet
-      if (replaceAll
-              || lastConversation == null
-              || (conv.creation.compareTo(lastConversation.creation) >= 0
-              && !conv.id.equals(lastConversation.id))) {
-
-        convDisplayList.addElement(conv.title);
-
-        // Remember the most recently displayed conversation
-        if (newLast == null || conv.creation.compareTo(newLast.creation) > 0 ) {
-          newLast = conv;
-        }
+    // Remove any titles that no longer exist
+    for (int i = 0; i < convListModel.size(); i++) {
+      if (!titles.contains(convListModel.getElementAt(i))){
+        convListModel.removeElementAt(i);
       }
     }
-    // Store the most recently displayed conversation
-    lastConversation = newLast;
+  }
+
+  // Force the conversations list to reload all of the titles
+  private void getAllConversations() {
+    convListModel.clear();
+    getNewConversations();
   }
 
   // Locate the Conversation object for a selected title string.
   // index handles possible duplicate titles.
   private ConversationSummary lookupByTitle(String title, int index) {
-
     int localIndex = 0;
     for (final ConversationSummary cs : clientContext.conversation.getConversationSummaries()) {
       if ((localIndex >= index) && cs.title.equals(title)) {
