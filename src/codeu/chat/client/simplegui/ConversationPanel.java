@@ -54,12 +54,15 @@ public final class ConversationPanel extends JPanel {
     titlePanelC.gridy = 0;
     titlePanelC.anchor = GridBagConstraints.PAGE_START;
 
-    final JLabel titleLabel = new JLabel("Conversations", JLabel.LEFT);
+    final JLabel titleLabel = new JLabel("CONVERSATIONS", JLabel.LEFT);
     titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    titleLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+    titleLabel.setForeground(new Color(188, 32, 49));
     titlePanel.add(titleLabel);
 
     // Conversation list
     final JPanel listShowPanel = new JPanel();
+    listShowPanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
     conversationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -68,15 +71,25 @@ public final class ConversationPanel extends JPanel {
 
     final JScrollPane listScrollPane = new JScrollPane(conversationList);
     listShowPanel.add(listScrollPane);
+    listScrollPane.setBackground(new Color(216, 216, 216));
     listScrollPane.setMinimumSize(new Dimension(250, 200));
+    listScrollPane.setPreferredSize(new Dimension(250, 320));
 
     // Button bar
     final JPanel buttonPanel = new JPanel();
+    buttonPanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints buttonPanelC = new GridBagConstraints();
 
-    final JButton updateButton = new JButton("Update");
-    final JButton addButton = new JButton("Add");
-
+    final JButton updateButton = new JButton("update");
+    updateButton.setBackground(new Color(188, 32, 49));
+    updateButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+    updateButton.setForeground(Color.WHITE);
+    
+    final JButton addButton = new JButton("add");
+    addButton.setBackground(new Color(188, 32, 49));
+    addButton.setForeground(Color.WHITE);
+    addButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+    
     updateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
     buttonPanel.add(updateButton);
     buttonPanel.add(addButton);
@@ -133,6 +146,8 @@ public final class ConversationPanel extends JPanel {
             // No duplicate names are allowed
             if (ConversationPanel.this.convListModel.contains(s)) {
               JOptionPane.showMessageDialog(ConversationPanel.this, "Conversation already exists");
+            } else if (s.length() > 35) { // conversation name length should not exceed 35 characters
+              JOptionPane.showMessageDialog(ConversationPanel.this, "Max length for a conversation name is 40 characters");
             } else {
               clientContext.conversation.startConversation(s, clientContext.user.getCurrent().id);
               ConversationPanel.this.getNewConversations();
@@ -156,7 +171,6 @@ public final class ConversationPanel extends JPanel {
 
           clientContext.conversation.setCurrent(cs);
 
-
           messagePanel.update(clientContext.conversation.getCurrent());
         }
       }
@@ -165,7 +179,9 @@ public final class ConversationPanel extends JPanel {
     getAllConversations();
   }
 
-  // Populate ListModel - updates display objects.
+  /**
+   * Populate ListModel - updates display objects.
+   */
   public void getNewConversations() {
 
     // Get all of the conversations
@@ -191,14 +207,18 @@ public final class ConversationPanel extends JPanel {
     }
   }
 
-  // Force the conversations list to reload all of the titles
+  /**
+   * Force the conversations list to reload all of the titles
+   */
   private void getAllConversations() {
     convListModel.clear();
     getNewConversations();
   }
 
-  // Locate the Conversation object for a selected title string.
-  // index handles possible duplicate titles.
+  /**
+   * Locate the Conversation object for a selected title string.
+   * index handles possible duplicate titles.
+   */
   private ConversationSummary lookupByTitle(String title, int index) {
     int localIndex = 0;
     for (final ConversationSummary cs : clientContext.conversation.getConversationSummaries()) {
