@@ -75,7 +75,7 @@ public final class ConversationPanel extends JPanel {
     conversationList.setVisibleRowCount(15);
     conversationList.setSelectedIndex(-1);
     conversationList.setCellRenderer(new ConversationRenderer());
-    conversationList.setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8)); // top, left, bottom, right
+    conversationList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // top, left, bottom, right
     conversationList.setOpaque(false);
 
     final JScrollPane listScrollPane = new JScrollPane(conversationList);
@@ -85,6 +85,8 @@ public final class ConversationPanel extends JPanel {
     listScrollPane.setMinimumSize(new Dimension(260, 200));
     listScrollPane.setPreferredSize(new Dimension(260, 320));
     listScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    
+    // scrollbar visual components
     listScrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI()
     {
       protected JButton createDecreaseButton(int orientation) {
@@ -186,7 +188,7 @@ public final class ConversationPanel extends JPanel {
             // No duplicate names are allowed
             if (ConversationPanel.this.convListModel.contains(s)) {
               JOptionPane.showMessageDialog(ConversationPanel.this, "Conversation already exists");
-            } else if (s.length() > 35) { // conversation name length should not exceed 35 characters
+            } else if (s.length() > 40) { // conversation name length should not exceed 40 characters
               JOptionPane.showMessageDialog(ConversationPanel.this, "Max length for a conversation name is 40 characters");
             } else {
               clientContext.conversation.startConversation(s, clientContext.user.getCurrent().id);

@@ -128,18 +128,42 @@ public final class MessagePanel extends JPanel {
     messageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     messageList.setVisibleRowCount(15);
     messageList.setSelectedIndex(-1);
-    messageList.setCellRenderer(new ConversationRenderer());
+    messageList.setCellRenderer(new MessageRenderer());
+    messageList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     
     userListScrollPane = new JScrollPane(messageList);
     listShowPanel.add(userListScrollPane);
     userListScrollPane.setForeground(Color.WHITE);
     userListScrollPane.setMinimumSize(new Dimension(700, 280));
     userListScrollPane.setPreferredSize(new Dimension(700, 280));
+    userListScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    
+    // scrollbar visual components
     userListScrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI()
     {
+      protected JButton createDecreaseButton(int orientation) {
+        JButton button = super.createDecreaseButton(orientation);
+        modifyButton(button);
+        return button;
+      }
+      
+      protected JButton createIncreaseButton(int orientation) {
+        JButton button = super.createIncreaseButton(orientation);
+        modifyButton(button);
+        return button;
+      }
+      
+      // helper method to change increment & decrement buttons to a default style
+      private JButton modifyButton(JButton button) {
+        button.setBackground(new Color(188, 32, 49, 0));
+        button.setForeground(new Color(188, 32, 49, 0));
+        button.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        return button;
+      }
+      
       protected void configureScrollBarColors() {
-        trackColor = new Color(255, 255, 255, 0);
-        thumbColor = new Color(188, 32, 49);
+        trackColor = new Color(19, 103, 154, 0);
+        thumbColor = new Color(19, 103, 154);
       }
     });
 

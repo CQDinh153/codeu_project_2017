@@ -2,6 +2,8 @@ package codeu.chat.client.simplegui;
 
 import java.awt.*;
 import java.awt.Component;
+
+import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -9,6 +11,8 @@ import javax.swing.ListCellRenderer;
 // without the @SuppressWarnings, the compiler will complain of no override for serialVersionUID
 @SuppressWarnings("serial")
 
+// Purpose of this class is to allow for visual modifications
+// of the DefaultListModel located in the Conversation Panel
 public class ConversationRenderer extends JLabel implements ListCellRenderer<Object> {
 
   /**
@@ -30,16 +34,14 @@ public class ConversationRenderer extends JLabel implements ListCellRenderer<Obj
     setBackground(new Color(238, 238, 238));
     setOpaque(true);
     
+    setBorder(new EmptyBorder(5, 5, 5, 5));
+    
     setEnabled(list.isEnabled());
     
     if (isSelected) {
-      setBackground(Color.WHITE);
-      
-    }
-    
-    if (cellHasFocus) {
-      
-      
+      setForeground(Color.WHITE);
+      setBackground(new Color(188, 32, 49));
+      setFont(new Font("Lucida Grande", Font.BOLD, 14));
     }
     
     return this;
