@@ -14,11 +14,15 @@
 
 package codeu.chat.client.simplegui;
 
+import java.util.HashSet;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.*;
-import java.util.HashSet;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -48,15 +52,16 @@ public final class ConversationPanel extends JPanel {
     // a list of conversations, and a button bar.
 
     // Title
-    final JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    final JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    titlePanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints titlePanelC = new GridBagConstraints();
     titlePanelC.gridx = 0;
     titlePanelC.gridy = 0;
     titlePanelC.anchor = GridBagConstraints.PAGE_START;
 
     final JLabel titleLabel = new JLabel("CONVERSATIONS", JLabel.LEFT);
-    titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-    titleLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+    titleLabel.setFont(new Font("Lucida Grande", Font.BOLD, 15));
     titleLabel.setForeground(new Color(188, 32, 49));
     titlePanel.add(titleLabel);
 
@@ -65,15 +70,48 @@ public final class ConversationPanel extends JPanel {
     listShowPanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
+    conversationList.setFixedCellHeight(25); // adjusts spacing in between cells
     conversationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     conversationList.setVisibleRowCount(15);
     conversationList.setSelectedIndex(-1);
+    conversationList.setCellRenderer(new ConversationRenderer());
+    conversationList.setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8)); // top, left, bottom, right
+    conversationList.setOpaque(false);
 
     final JScrollPane listScrollPane = new JScrollPane(conversationList);
     listShowPanel.add(listScrollPane);
-    listScrollPane.setBackground(new Color(216, 216, 216));
-    listScrollPane.setMinimumSize(new Dimension(250, 200));
-    listScrollPane.setPreferredSize(new Dimension(250, 320));
+    listScrollPane.setOpaque(false);
+    listScrollPane.setBackground(new Color(238, 238, 238));
+    listScrollPane.setMinimumSize(new Dimension(260, 200));
+    listScrollPane.setPreferredSize(new Dimension(260, 320));
+    listScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    listScrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI()
+    {
+      protected JButton createDecreaseButton(int orientation) {
+        JButton button = super.createDecreaseButton(orientation);
+        modifyButton(button);
+        return button;
+      }
+      
+      protected JButton createIncreaseButton(int orientation) {
+        JButton button = super.createIncreaseButton(orientation);
+        modifyButton(button);
+        return button;
+      }
+      
+      // helper method to change increment & decrement buttons to a default style
+      private JButton modifyButton(JButton button) {
+        button.setBackground(new Color(188, 32, 49, 0));
+        button.setForeground(new Color(188, 32, 49, 0));
+        button.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        return button;
+      }
+
+      protected void configureScrollBarColors() {
+        trackColor = new Color(255, 255, 255, 0);
+        thumbColor = new Color(188, 32, 49);
+      }
+    });
 
     // Button bar
     final JPanel buttonPanel = new JPanel();
@@ -84,12 +122,14 @@ public final class ConversationPanel extends JPanel {
     updateButton.setBackground(new Color(188, 32, 49));
     updateButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
     updateButton.setForeground(Color.WHITE);
-    
+    updateButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
     final JButton addButton = new JButton("add");
     addButton.setBackground(new Color(188, 32, 49));
     addButton.setForeground(Color.WHITE);
     addButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
-    
+    addButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+
     updateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
     buttonPanel.add(updateButton);
     buttonPanel.add(addButton);
@@ -139,8 +179,8 @@ public final class ConversationPanel extends JPanel {
         ConversationPanel.this.getNewConversations();
         if (clientContext.user.hasCurrent()) {
           final String s = (String) JOptionPane.showInputDialog(
-            ConversationPanel.this, "Enter title:", "Add Conversation", JOptionPane.PLAIN_MESSAGE,
-            null, null, "");
+              ConversationPanel.this, "Enter title:", "Add Conversation", JOptionPane.PLAIN_MESSAGE,
+              null, null, "");
           if (s != null && s.length() > 0) {
             ConversationPanel.this.getAllConversations();
             // No duplicate names are allowed

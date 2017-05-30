@@ -19,8 +19,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.util.HashSet;
+
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 
 import codeu.chat.client.ClientContext;
 import codeu.chat.common.ConversationSummary;
@@ -90,7 +93,7 @@ public final class MessagePanel extends JPanel {
     titleConvPanelC.anchor = GridBagConstraints.PAGE_START;
 
     final JPanel titleOwnerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    titleConvPanel.setBackground(new Color(229, 229, 229));
+    titleOwnerPanel.setBackground(new Color(229, 229, 229));
     final GridBagConstraints titleOwnerPanelC = new GridBagConstraints();
     titleOwnerPanelC.gridx = 0;
     titleOwnerPanelC.gridy = 1;
@@ -100,7 +103,7 @@ public final class MessagePanel extends JPanel {
     // can update it.
     messageConversationLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
     messageConversationLabel.setForeground(new Color(13, 73, 109));
-    messageConversationLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+    messageConversationLabel.setFont(new Font("Lucida Grande", Font.BOLD, 15));
     titleConvPanel.add(messageConversationLabel);
 
     // messageOwnerLabel is an instance variable of Conversation panel
@@ -132,6 +135,13 @@ public final class MessagePanel extends JPanel {
     userListScrollPane.setForeground(Color.WHITE);
     userListScrollPane.setMinimumSize(new Dimension(700, 280));
     userListScrollPane.setPreferredSize(new Dimension(700, 280));
+    userListScrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI()
+    {
+      protected void configureScrollBarColors() {
+        trackColor = new Color(255, 255, 255, 0);
+        thumbColor = new Color(188, 32, 49);
+      }
+    });
 
     // Button panel
     final JPanel buttonPanel = new JPanel();

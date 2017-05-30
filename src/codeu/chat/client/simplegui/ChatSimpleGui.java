@@ -64,12 +64,6 @@ public final class ChatSimpleGui {
     }
   }
 
-  private Border paneBorder() {
-    Border outside = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
-    Border inside = BorderFactory.createEmptyBorder(8, 8, 8, 8);
-    return BorderFactory.createCompoundBorder(outside, inside);
-  }
-
   /**
    * Initialize the GUI
    */
