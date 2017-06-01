@@ -17,6 +17,7 @@ package codeu.chat.server;
 import static org.junit.Assert.*;
 
 import codeu.chat.common.*;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.Before;
 
@@ -25,7 +26,7 @@ import java.sql.SQLException;
 
 public final class BasicControllerTest {
 
-  private static String databaseFilename = "serverState.db";
+  private static String databaseFilename = "testDatabase.db";
 
   private Model model;
   private Database database;
@@ -38,10 +39,15 @@ public final class BasicControllerTest {
     controller = new Controller(Uuids.NULL, model, database);
   }
 
+  @After
+  public void doAfter() throws SQLException{
+    database.close();
+  }
+
   @Test
   public void testAddUser() {
 
-    final User user = controller.newUser("user");
+    final User user = controller.newUser("BasicTestUser");
 
     assertFalse(
         "Check that user has a valid reference",
@@ -52,14 +58,14 @@ public final class BasicControllerTest {
   @Test
   public void testAddConversation() {
 
-    final User user = controller.newUser("user");
+    final User user = controller.newUser("BasicTestConversationUser");
 
     assertFalse(
         "Check that user has a valid reference",
         user == null);
 
     final Conversation conversation = controller.newConversation(
-        "conversation",
+        "BasicTestConversation",
         user.id);
 
     assertFalse(
@@ -70,14 +76,14 @@ public final class BasicControllerTest {
   @Test
   public void testAddMessage() {
 
-    final User user = controller.newUser("user");
+    final User user = controller.newUser("BasicTestMessageUser");
 
     assertFalse(
         "Check that user has a valid reference",
         user == null);
 
     final Conversation conversation = controller.newConversation(
-        "conversation",
+        "BasicTestMessageConversation",
         user.id);
 
     assertFalse(
@@ -87,7 +93,7 @@ public final class BasicControllerTest {
     final Message message = controller.newMessage(
         user.id,
         conversation.id,
-        "Hello World");
+        "Basic Test Message");
 
     assertFalse(
         "Check that the message has a valid reference",

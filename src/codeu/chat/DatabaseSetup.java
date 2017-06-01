@@ -20,6 +20,8 @@ public class DatabaseSetup {
       // Construct the database URL
       String url = "jdbc:sqlite:" + args[0];
 
+      LOG.info("Setting up database at " + args[0]);
+
       try {
         // Connect to the database
         // If the database does not exist, this will create it
@@ -43,6 +45,8 @@ public class DatabaseSetup {
         } catch (SQLException ex) {
 
           LOG.error("The database could not be set up");
+          LOG.error(ex.getMessage());
+          System.exit(1);
 
         }
       } catch (SQLException ex) {

@@ -14,25 +14,47 @@
 
 package codeu.chat;
 
+import codeu.chat.server.Database;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import java.sql.SQLException;
+
 public final class TestRunner {
   public static void main(String[] args) {
-     final Result result =
-         JUnitCore.runClasses(
-             codeu.chat.common.SecretTest.class,
-             codeu.chat.common.UuidTest.class,
-             codeu.chat.common.UuidsTest.class,
-             codeu.chat.relay.ServerTest.class,
-             codeu.chat.server.BasicControllerTest.class,
-             codeu.chat.server.RawControllerTest.class,
-             codeu.chat.util.store.StoreTest.class
-         );
+
+    // Clear the database
+    Database db = new Database("testDatabase.db");
+    try {
+      db.executeUpdate("DELETE FROM users");
+      db.executeUpdate("DELETE FROM conversations");
+      db.executeUpdate("DELETE FROM messages");
+      db.close();
+    } catch (SQLException ex) {
+
+    }
+
+    // Run the tests
+    final Result result =
+      JUnitCore.runClasses(
+        codeu.chat.common.SecretTest.class,
+        codeu.chat.common.UuidTest.class,
+        codeu.chat.common.UuidsTest.class,
+        codeu.chat.relay.ServerTest.class,
+        codeu.chat.server.BasicControllerTest.class,
+        codeu.chat.server.RawControllerTest.class,
+        codeu.chat.server.DatabaseTest.class,
+        codeu.chat.util.store.StoreTest.class
+      );
+    if (result.wasSuccessful()) {
+      System.out.println("\nAll Tests Passed");
+    } else {
+      System.out.println("\nFailures:");
       for (final Failure failure : result.getFailures()) {
-         System.out.println(failure.toString());
+        System.out.println(failure.toString());
       }
-      System.out.println(result.wasSuccessful());
-   }
+    }
+
+  }
 }

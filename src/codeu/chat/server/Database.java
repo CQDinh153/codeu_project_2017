@@ -78,24 +78,29 @@ public class Database {
     }
   }
 
+  public void close() throws SQLException {
+    conn.close();
+  }
+
+
   // Runs a SQL query on the database and returns
   // true if the result is a ResultSet
   // false if it is an update count or there are not results
   // Only implemented for completeness with execureQuery and executeUpdate
-  public boolean execute(String query) throws SQLException{
+  public boolean execute(String query) throws SQLException {
     return stmt.execute(query);
   }
 
   // Runs a SQL query on the database and returns the ResultSet that the database returns
   // Use this to run queries like SELECT
-  public ResultSet executeQuery(String query) throws SQLException{
+  public ResultSet executeQuery(String query) throws SQLException {
     return stmt.executeQuery(query);
   }
 
   // Runs a SQL query on the database and returns the number of rows that were affected
   // Use this to run INSERT, UPDATE, or DELETE queries or queries that return nothing
   // If the query returns nothing, this returns 0
-  public int executeUpdate(String query) throws SQLException{
+  public int executeUpdate(String query) throws SQLException {
     return stmt.executeUpdate(query);
   }
 
@@ -114,14 +119,31 @@ public class Database {
       // Set the content string
       messageStatement.setString(5, msg.content);
       // Update the row
-      return messageStatement.executeUpdate() > 0;
+      int updatedRows = messageStatement.executeUpdate();
+
+      if (updatedRows == 1) {
+
+        // If one row was changed, return true
+        return true;
+
+      } else if (updatedRows == 0) {
+
+        // If no rows were changed, return false
+        return false;
+      } else {
+
+        // Throw an exception if the number of rows changed is not 0 or 1
+        // This should never happen since the query can only affect 1 row at most
+        throw new SQLException("Invalid number of rows were changed");
+
+      }
 
     } catch (SQLException ex) {
 
-      LOG.error("An exception occurred while saving a message");
-      LOG.error(ex.getMessage());
+      LOG.error("An exception occurred while saving a message\n" + ex.getMessage() + "\nError Code: " + ex.getErrorCode());
 
     }
+
     return false;
   }
 
@@ -137,20 +159,36 @@ public class Database {
       // Set the conversation title
       conversationStatement.setString(4, conversation.title);
       // Update the row
-      return conversationStatement.executeUpdate() > 0;
+      int updatedRows = conversationStatement.executeUpdate();
+
+      if (updatedRows == 1) {
+
+        // If one row was changed, return true
+        return true;
+
+      } else if (updatedRows == 0) {
+
+        // If no rows were changed, return false
+        return false;
+      } else {
+
+        // Throw an exception if the number of rows changed is not 0 or 1
+        // This should never happen since the query can only affect 1 row at most
+        throw new SQLException("Invalid number of rows were changed");
+
+      }
 
     } catch (SQLException ex) {
 
-      LOG.error("An exception occurred while saving a conversation");
-      LOG.error(ex.getMessage());
+      LOG.error("An exception occurred while saving a conversation\n" + ex.getMessage() + "\nError Code: " + ex.getErrorCode());
 
     }
+
     return false;
   }
 
   // Save a user into the database
   public boolean saveUser(User user) {
-
     try {
       // Set the id
       userStatement.setInt(1, user.id.id());
@@ -158,15 +196,33 @@ public class Database {
       userStatement.setString(2, user.name);
       // Set the creation time
       userStatement.setLong(3, user.creation.inMs());
+
       // Update the row
-      return userStatement.executeUpdate() > 0;
+      int updatedRows = userStatement.executeUpdate();
+
+      if (updatedRows == 1) {
+
+        // If one row was changed, return true
+        return true;
+
+      } else if (updatedRows == 0) {
+
+        // If no rows were changed, return false
+        return false;
+      } else {
+
+        // Throw an exception if the number of rows changed is not 0 or 1
+        // This should never happen since the query can only affect 1 row at most
+        throw new SQLException("Invalid number of rows were changed");
+
+      }
 
     } catch (SQLException ex) {
 
-      LOG.error("An exception occurred while saving a user");
-      LOG.error(ex.getMessage());
+      LOG.error("An exception occurred while saving a user\n" + ex.getMessage() + "\nError Code: " + ex.getErrorCode());
 
     }
+
     return false;
   }
 }

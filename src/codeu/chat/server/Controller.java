@@ -16,8 +16,6 @@ package codeu.chat.server;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Collection;
 
 import codeu.chat.common.BasicController;
 import codeu.chat.common.Conversation;
@@ -45,8 +43,6 @@ public final class Controller implements RawController, BasicController {
     this.serverId = serverId;
     this.uuidGenerator = new RandomUuidGenerator(serverId, System.currentTimeMillis());
     this.database = database;
-
-    load();
   }
 
   @Override
@@ -202,7 +198,7 @@ public final class Controller implements RawController, BasicController {
   }
 
   // This function loads all of the values in a database in the correct order
-  private void load() {
+  public void loadFromDatabase() {
     // Load all of the users from the database
     try {
 

@@ -52,6 +52,7 @@ public final class Server {
     this.id = id;
     this.secret = Arrays.copyOf(secret, secret.length);
     this.controller = new Controller(id, model, database);
+    controller.loadFromDatabase();
     this.relay = relay;
   }
 
