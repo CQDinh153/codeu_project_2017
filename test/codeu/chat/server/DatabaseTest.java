@@ -33,8 +33,6 @@ import java.sql.SQLException;
 
 public final class DatabaseTest {
 
-  private static String databaseFilename = "testDatabase.db";
-
   private Model model;
   private Database database;
   private Controller controller;
@@ -51,7 +49,7 @@ public final class DatabaseTest {
   @Before
   public void doBefore() {
     model = new Model();
-    database = new Database(databaseFilename);
+    database = new Database(System.getProperty("TestDatabase"));
     controller = new Controller(Uuids.NULL, model, database);
 
     userId = controller.buildUuid(11);

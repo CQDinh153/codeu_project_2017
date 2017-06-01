@@ -14,7 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-mkdir -p bin
-
-javac -Xlint $(find * | grep "\\.java$") -d ./bin -sourcepath ./src -cp ./third_party/junit4.jar:./bin:./third_party/sqlite-jdbc.jar
-javac -Xlint $(find * | grep "\\.java$") -d ./bin -sourcepath ./test -cp ./third_party/junit4.jar:./bin:./third_party/sqlite-jdbc.jar
+cd './bin'
+java -cp ".:sqlite-jdbc.jar" codeu.chat.DatabaseSetup "serverState.db"

@@ -32,8 +32,6 @@ import java.sql.SQLException;
 
 public final class RawControllerTest {
 
-  private static String databaseFilename = "testDatabase.db";
-
   private Model model;
   private Database database;
   private RawController controller;
@@ -50,7 +48,7 @@ public final class RawControllerTest {
   @Before
   public void doBefore() {
     model = new Model();
-    database = new Database(databaseFilename);
+    database = new Database(System.getProperty("TestDatabase"));
     controller = new Controller(Uuids.NULL, model, database);
 
     userId = newTestId(1);

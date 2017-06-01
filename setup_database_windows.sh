@@ -14,4 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-java -cp ./third_party/junit4.jar:./bin codeu.chat.TestRunner
+cd './bin'
+java -cp ".;sqlite-jdbc.jar" codeu.chat.DatabaseSetup "serverState.db"

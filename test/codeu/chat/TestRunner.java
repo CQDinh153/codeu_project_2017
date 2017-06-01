@@ -24,8 +24,14 @@ import java.sql.SQLException;
 public final class TestRunner {
   public static void main(String[] args) {
 
+    // Get the test database path from command line input
+    String testDatabase = args[0];
+
+
+    System.setProperty("TestDatabase", testDatabase);
+
     // Clear the database
-    Database db = new Database("testDatabase.db");
+    Database db = new Database(testDatabase);
     try {
       db.executeUpdate("DELETE FROM users");
       db.executeUpdate("DELETE FROM conversations");

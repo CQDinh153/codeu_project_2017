@@ -14,5 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cd './bin'
-java -classpath ".;sqlite-jdbc.jar" codeu.chat.DatabaseSetup "serverState.db"
+cd "./bin"
+java -cp ".;../third_party_windows/junit4.jar;sqlite-jdbc.jar" codeu.chat.TestRunner
