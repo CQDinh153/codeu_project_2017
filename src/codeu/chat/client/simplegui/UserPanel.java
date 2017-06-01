@@ -17,7 +17,10 @@ package codeu.chat.client.simplegui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.util.*;
+import java.util.regex.Pattern;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -169,10 +172,20 @@ public final class UserPanel extends JPanel {
                 null, null, "");
         if (s != null && s.length() > 0) {
           UserPanel.this.getAllUsers();
+          Pattern pattern = Pattern.compile("[^a-zA-Z0-9._-]");
+          boolean isNonAlphaNumeric = pattern.matcher(s).find();
+          
           // No duplicate names are allowed
           if (UserPanel.this.userListModel.contains(s)){
             JOptionPane.showMessageDialog(UserPanel.this, "User already exists");
-          } else {
+          }
+          
+          // if special characters other than A-Z, 0-9, periods, or underscores are detected
+          else if (isNonAlphaNumeric){
+            JOptionPane.showMessageDialog(UserPanel.this, "Username must not contain characters other than letters, numbers, underscores, dashes, or periods");
+          }
+          
+          else {
             clientContext.user.addUser(s);
             UserPanel.this.getNewUsers();
           }
