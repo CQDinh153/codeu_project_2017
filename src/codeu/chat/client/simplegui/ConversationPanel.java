@@ -67,6 +67,7 @@ public final class ConversationPanel extends JPanel {
 
     // Conversation list
     final JPanel listShowPanel = new JPanel();
+    listShowPanel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
     listShowPanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
