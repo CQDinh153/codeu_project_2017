@@ -15,4 +15,4 @@
 # limitations under the License.
 
 cd "./bin"
-java -cp ".:../third_party/junit4.jar:sqlite-jdbc.jar" codeu.chat.TestRunner
+java -cp ".:../third_party/junit4.jar:sqlite-jdbc.jar" codeu.chat.TestRunner "testDatabase.db"
