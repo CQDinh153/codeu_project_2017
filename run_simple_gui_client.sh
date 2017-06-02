@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-OST="$1"
+HOST="$1"
 PORT="$2"
 
 if [[ "$HOST" == "" || "$PORT" == "" ]] ; then

@@ -46,12 +46,12 @@ if [ "$RELAY_ADDRESS" == "" ] ; then
       "$TEAM_ID" \
       "$TEAM_SECRET" \
       "$PORT" \
-      "$PERSISTENT_DIR"
+      "$PERSISTENT_DB"
 else
   java -cp ".:sqlite-jdbc.jar" codeu.chat.ServerMain \
       "$TEAM_ID" \
       "$TEAM_SECRET" \
       "$PORT" \
-      "$PERSISTENT_DIR" \
+      "$PERSISTENT_DB" \
       "$RELAY_ADDRESS"
 fi

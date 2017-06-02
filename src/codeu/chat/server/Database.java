@@ -47,6 +47,8 @@ public class Database {
       // Construct the database URL
       String url = "jdbc:sqlite:" + filename;
 
+      LOG.info("Connecting to SQLite Database "+filename);
+
       try {
         // Connect to the database
         // If the database does not exist, this will create it
@@ -54,6 +56,12 @@ public class Database {
 
         LOG.info("Connection to SQLite Database established");
 
+      } catch (SQLException ex) {
+        LOG.error("Could not connect to the database");
+        LOG.error(ex.getMessage());
+        System.exit(1); // Exit the program
+      }
+      try {
         // Create a Statement object to execute queries from
         stmt = conn.createStatement();
 
@@ -62,9 +70,11 @@ public class Database {
         conversationStatement = conn.prepareStatement("INSERT INTO conversations(id, owner, creation, title) VALUES (?, ?, ?, ?)");
         userStatement = conn.prepareStatement("INSERT INTO users(id, name, creation) VALUES (?, ?, ?)");
 
+        LOG.info("Statements Prepared");
+
       } catch (SQLException ex) {
 
-        LOG.error("Could not connect to the database");
+        LOG.error("Could not prepare statements");
         LOG.error(ex.getMessage());
         System.exit(1); // Exit the program
 

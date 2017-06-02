@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TEST_DB = "$1"
+TEST_DB="$1"
 
 if [ "$TEST_DB" == "" ] ; then
     echo "usage: <DATABASE>"
@@ -26,4 +26,4 @@ fi
 set -e
 
 cd "./bin"
-java -cp ".;../third_party/junit4.jar;sqlite-jdbc.jar" codeu.chat.TestRunner "$TEST_DB"
+java -cp ".;../third_party_windows/junit4.jar;sqlite-jdbc.jar" codeu.chat.TestRunner "$TEST_DB"

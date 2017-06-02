@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TEST_DB = "$1"
+TEST_DB="$1"
 
 if [ "$TEST_DB" == "" ] ; then
     echo "usage: <DATABASE>"
