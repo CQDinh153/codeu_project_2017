@@ -174,7 +174,7 @@ public final class MessagePanel extends JPanel {
 
     messageField.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
     messageField.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-    messageField.setBackground(new Color(13, 79, 109));
+    messageField.setBackground(new Color(19, 103, 154));
     messageField.setForeground(Color.WHITE);
     buttonPanel.add(messageField);
     messageField.setEditable(true);
@@ -200,7 +200,7 @@ public final class MessagePanel extends JPanel {
     final JButton addButton = new JButton("send");
     addButton.setBorder(BorderFactory.createEmptyBorder(7, 7, 7, 7));
     addButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
-    addButton.setBackground(new Color(23, 86, 118));
+    addButton.setBackground(new Color(19, 103, 154));
     addButton.setForeground(Color.WHITE);
     addButton.setPreferredSize(new Dimension(44, 31));
     buttonPanel.add(addButton);

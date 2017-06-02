@@ -88,7 +88,9 @@ public final class ChatSimpleGui {
 
 	/* Adds a menu bar with exit and sign-in options */
     JMenuBar menuBar = new JMenuBar();
-
+    Font menuFont = new Font("Lucida Grande", Font.PLAIN, 12);
+    UIManager.put("Menu.font", menuFont);
+    
     JMenu userMenu = new JMenu("Options");
     JMenuItem jmiSwitchUser = new JMenuItem("Manage Users");
     userMenu.add(jmiSwitchUser);
@@ -100,7 +102,7 @@ public final class ChatSimpleGui {
 
 	/* Creates "manage users" window in advance to maintain current user sign-in */
     JFrame popUpFrame = new JFrame("Manage Users");
-    popUpFrame.setSize(400, 400);
+    popUpFrame.setSize(420, 400);
     popUpFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     popUpFrame.setLocation(360, 360);
 

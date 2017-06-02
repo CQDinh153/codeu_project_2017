@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.event.ListSelectionListener;
 
 import codeu.chat.client.ClientContext;
@@ -48,31 +49,20 @@ public final class UserPanel extends JPanel {
     // This panel contains from top to bottom; a title bar, a list of users,
     // information about the current (selected) user, and a button bar.
 
-    // Title bar - also includes name of currently signed-in user.
+    // Title bar - includes name of currently signed-in user.
     final JPanel titlePanel = new JPanel(new GridBagLayout());
     final GridBagConstraints titlePanelC = new GridBagConstraints();
 
-    final JLabel titleLabel = new JLabel("Users", JLabel.LEFT);
+    final JLabel titleLabel = new JLabel("not signed in", JLabel.CENTER);
+    titleLabel.setFont(new Font("Lucida Grande", Font.BOLD, 12));
+    titleLabel.setForeground(new Color(13, 79, 109));
     final GridBagConstraints titleLabelC = new GridBagConstraints();
     titleLabelC.gridx = 0;
     titleLabelC.gridy = 0;
     titleLabelC.anchor = GridBagConstraints.PAGE_START;
 
-    final GridBagConstraints titleGapC = new GridBagConstraints();
-    titleGapC.gridx = 1;
-    titleGapC.gridy = 0;
-    titleGapC.fill = GridBagConstraints.HORIZONTAL;
-    titleGapC.weightx = 0.9;
-
-    final JLabel userSignedInLabel = new JLabel("not signed in", JLabel.RIGHT);
-    final GridBagConstraints titleUserC = new GridBagConstraints();
-    titleUserC.gridx = 2;
-    titleUserC.gridy = 0;
-    titleUserC.anchor = GridBagConstraints.LINE_END;
-
     titlePanel.add(titleLabel, titleLabelC);
-    titlePanel.add(Box.createHorizontalGlue(), titleGapC);
-    titlePanel.add(userSignedInLabel, titleUserC);
+    titlePanel.add(titleLabel);
     titlePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
     // User List panel.
@@ -82,28 +72,66 @@ public final class UserPanel extends JPanel {
     userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     userList.setVisibleRowCount(10);
     userList.setSelectedIndex(-1);
+    userList.setCellRenderer(new UserRenderer());
+    userList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
     final JScrollPane userListScrollPane = new JScrollPane(userList);
     listShowPanel.add(userListScrollPane);
-    userListScrollPane.setPreferredSize(new Dimension(150, 150));
+    userListScrollPane.setPreferredSize(new Dimension(280, 150));
+
+    // scrollbar visual components
+    userListScrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI()
+    {
+      protected JButton createDecreaseButton(int orientation) {
+        JButton button = super.createDecreaseButton(orientation);
+        modifyButton(button);
+        return button;
+      }
+
+      protected JButton createIncreaseButton(int orientation) {
+        JButton button = super.createIncreaseButton(orientation);
+        modifyButton(button);
+        return button;
+      }
+
+      // helper method to change increment & decrement buttons to a default style
+      private JButton modifyButton(JButton button) {
+        button.setBackground(new Color(188, 32, 49, 0));
+        button.setForeground(new Color(188, 32, 49, 0));
+        button.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        return button;
+      }
+
+      protected void configureScrollBarColors() {
+        trackColor = new Color(255, 255, 255, 0);
+        thumbColor = new Color(13, 79, 109);
+      }
+    });
 
     // Current User panel
     final JPanel currentPanel = new JPanel();
     final GridBagConstraints currentPanelC = new GridBagConstraints();
 
     final JTextArea userInfoPanel = new JTextArea();
+    userInfoPanel.setEditable(false);
+
     final JScrollPane userInfoScrollPane = new JScrollPane(userInfoPanel);
     currentPanel.add(userInfoScrollPane);
-    userInfoScrollPane.setPreferredSize(new Dimension(245, 85));
+    userInfoScrollPane.setPreferredSize(new Dimension(280, 85));
 
     // Button bar
     final JPanel buttonPanel = new JPanel();
     final GridBagConstraints buttonPanelC = new GridBagConstraints();
 
-    final JButton userUpdateButton = new JButton("Update");
-    final JButton userSignInButton = new JButton("Sign In");
-    final JButton userAddButton = new JButton("Add");
+    JButton userUpdateButton = new JButton("update");
+    userUpdateButton = changeButton(userUpdateButton);
+    
+    JButton userSignInButton = new JButton("sign in");
+    userSignInButton = changeButton(userSignInButton);
 
+    JButton userAddButton = new JButton("add");
+    userAddButton = changeButton(userAddButton);
+    
     buttonPanel.add(userUpdateButton);
     buttonPanel.add(userSignInButton);
     buttonPanel.add(userAddButton);
@@ -158,7 +186,7 @@ public final class UserPanel extends JPanel {
         if (userList.getSelectedIndex() != -1) {
           final String data = userList.getSelectedValue();
           clientContext.user.signInUser(data);
-          userSignedInLabel.setText("Hello " + data);
+          titleLabel.setText("Hello " + data);
         }
       }
     });
@@ -168,23 +196,28 @@ public final class UserPanel extends JPanel {
       public void actionPerformed(ActionEvent e) {
         UserPanel.this.getNewUsers();
         final String s = (String) JOptionPane.showInputDialog(
-                UserPanel.this, "Enter user name:", "Add User", JOptionPane.PLAIN_MESSAGE,
-                null, null, "");
+            UserPanel.this, "Enter user name:", "Add User", JOptionPane.PLAIN_MESSAGE,
+            null, null, "");
         if (s != null && s.length() > 0) {
           UserPanel.this.getAllUsers();
           Pattern pattern = Pattern.compile("[^a-zA-Z0-9._-]");
           boolean isNonAlphaNumeric = pattern.matcher(s).find();
-          
+
           // No duplicate names are allowed
           if (UserPanel.this.userListModel.contains(s)){
             JOptionPane.showMessageDialog(UserPanel.this, "User already exists");
           }
-          
+
+          // sets a username length limit
+          else if(s.length() < 5 || s.length() > 40) {
+            JOptionPane.showMessageDialog(UserPanel.this, "Username must be between 5 to 40 characters long");
+          }
+
           // if special characters other than A-Z, 0-9, periods, or underscores are detected
           else if (isNonAlphaNumeric){
             JOptionPane.showMessageDialog(UserPanel.this, "Username must not contain characters other than letters, numbers, underscores, dashes, or periods");
           }
-          
+
           else {
             clientContext.user.addUser(s);
             UserPanel.this.getNewUsers();
@@ -205,6 +238,18 @@ public final class UserPanel extends JPanel {
     });
 
     getAllUsers();
+  }
+  
+  // changes the look of a button to match the UI color scheme
+  private JButton changeButton(JButton button) {
+    
+    button.setBackground(new Color(13, 79, 109));
+    button.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+    button.setForeground(Color.WHITE);
+    button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+    
+    return button;
+    
   }
 
   // Populate ListModel - updates display objects.
