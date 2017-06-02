@@ -22,9 +22,9 @@ import java.util.Map;
 import codeu.chat.common.Conversation;
 import codeu.chat.common.ConversationSummary;
 import codeu.chat.common.Message;
+import codeu.chat.util.Uuid;
 import codeu.chat.util.Logger;
 import codeu.chat.util.Method;
-import codeu.chat.util.Uuid;
 
 public final class ClientMessage {
 

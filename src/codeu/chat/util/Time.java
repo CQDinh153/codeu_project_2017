@@ -53,7 +53,7 @@ public final class Time implements Comparable<Time> {
     return date.compareTo(other.date);
   }
 
-  public boolean inRange(Time start, Time end) {
+  public boolean inRange(Time start, Time end){
     return this.compareTo(start) >= 0 && this.compareTo(end) <= 0;
   }
 

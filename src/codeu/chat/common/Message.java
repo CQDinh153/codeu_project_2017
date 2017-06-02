@@ -43,12 +43,12 @@ public final class Message {
     public Message read(InputStream in) throws IOException {
 
       return new Message(
-          Uuid.SERIALIZER.read(in),
-          Uuid.SERIALIZER.read(in),
-          Uuid.SERIALIZER.read(in),
-          Time.SERIALIZER.read(in),
-          Uuid.SERIALIZER.read(in),
-          Serializers.STRING.read(in)
+        Uuid.SERIALIZER.read(in),
+        Uuid.SERIALIZER.read(in),
+        Uuid.SERIALIZER.read(in),
+        Time.SERIALIZER.read(in),
+        Uuid.SERIALIZER.read(in),
+        Serializers.STRING.read(in)
       );
 
     }

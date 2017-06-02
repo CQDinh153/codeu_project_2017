@@ -41,10 +41,10 @@ public final class ConversationSummary implements ListViewable {
     public ConversationSummary read(InputStream in) throws IOException {
 
       return new ConversationSummary(
-          Uuid.SERIALIZER.read(in),
-          Uuid.SERIALIZER.read(in),
-          Time.SERIALIZER.read(in),
-          Serializers.STRING.read(in)
+        Uuid.SERIALIZER.read(in),
+        Uuid.SERIALIZER.read(in),
+        Time.SERIALIZER.read(in),
+        Serializers.STRING.read(in)
       );
 
     }

@@ -16,5 +16,5 @@
 
 mkdir -p bin
 
-javac -Xlint $(find * | grep "\\.java$") -d bin -sourcepath src -cp third_party_windows/junit4.jar
-javac -Xlint $(find * | grep "\\.java$") -d bin -sourcepath test -cp third_party_windows/junit4.jar
+javac -Xlint $(find * | grep "\\.java$") -d bin -sourcepath src -cp "./third_party_windows/*"
+javac -Xlint $(find * | grep "\\.java$") -d bin -sourcepath test -cp "./third_party_windows/*"

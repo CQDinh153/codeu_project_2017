@@ -46,10 +46,10 @@ public final class Conversation {
     public Conversation read(InputStream in) throws IOException {
 
       final Conversation value = new Conversation(
-          Uuid.SERIALIZER.read(in),
-          Uuid.SERIALIZER.read(in),
-          Time.SERIALIZER.read(in),
-          Serializers.STRING.read(in)
+        Uuid.SERIALIZER.read(in),
+        Uuid.SERIALIZER.read(in),
+        Time.SERIALIZER.read(in),
+        Serializers.STRING.read(in)
       );
 
       value.users.addAll(Serializers.collection(Uuid.SERIALIZER).read(in));

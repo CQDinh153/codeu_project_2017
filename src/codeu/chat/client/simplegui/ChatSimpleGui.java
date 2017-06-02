@@ -31,7 +31,6 @@ import codeu.chat.util.Logger;
 // Chat - top-level client application - Java Simple GUI (using Java Swing)
 public final class ChatSimpleGui {
 
-
   private final long POLLING_PERIOD_MS = 1000;
   private final long POLLING_DELAY_MS = 0;
 
@@ -41,12 +40,16 @@ public final class ChatSimpleGui {
 
   private final ClientContext clientContext;
 
-  // Constructor - sets up the Chat Application
+  /**
+   * Constructor - sets up the Chat Application
+   */
   public ChatSimpleGui(Controller controller, View view) {
     clientContext = new ClientContext(controller, view);
   }
 
-  // Run the GUI client
+  /**
+   * Run the GUI client
+   */
   public void run() {
 
     try {
@@ -61,20 +64,17 @@ public final class ChatSimpleGui {
     }
   }
 
-  private Border paneBorder() {
-    Border outside = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
-    Border inside = BorderFactory.createEmptyBorder(8, 8, 8, 8);
-    return BorderFactory.createCompoundBorder(outside, inside);
-  }
-
-  // Initialize the GUI
+  /**
+   * Initialize the GUI
+   */
   private void initialize() {
-    /* modifies look and feel of GUI */
-    try{
-      UIManager.LookAndFeelInfo[] laf=UIManager.getInstalledLookAndFeels();
 
-      UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-    }catch(Exception e){
+	/* modifies look and feel of GUI */
+    try {
+      UIManager.LookAndFeelInfo[] laf = UIManager.getInstalledLookAndFeels();
+
+      UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+    } catch (Exception e) {
       System.out.println("Problems editing the look and feel");
       System.exit(-1);
     }
@@ -83,10 +83,10 @@ public final class ChatSimpleGui {
     // NOTE: may have tweak size, or place in scrollable panel.
     mainFrame = new JFrame("Chat");
     mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    mainFrame.setSize(790, 500);
+    mainFrame.setSize(850, 600);
     mainFrame.setLocation(300, 300);
 
-    /* Adds a menu bar with exit and sign-in options */
+	/* Adds a menu bar with exit and sign-in options */
     JMenuBar menuBar = new JMenuBar();
 
     JMenu userMenu = new JMenu("Options");
@@ -98,8 +98,7 @@ public final class ChatSimpleGui {
     menuBar.add(userMenu);
     mainFrame.setJMenuBar(menuBar);
 
-    /* Creates "manage users" window in advance to maintain current user sign-in */
-
+	/* Creates "manage users" window in advance to maintain current user sign-in */
     JFrame popUpFrame = new JFrame("Manage Users");
     popUpFrame.setSize(400, 400);
     popUpFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -107,41 +106,37 @@ public final class ChatSimpleGui {
 
     // Build main panels - Users, Conversations, Messages.
     final UserPanel usersViewPanel = new UserPanel(clientContext);
-    usersViewPanel.setBorder(paneBorder());
 
     popUpFrame.getContentPane().add(usersViewPanel);
 
-		/* if "manage users" option is clicked, opens up sign-in window */
+	/* if "manage users" option is clicked, opens up sign-in window */
     jmiSwitchUser.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("Manage Users")) {
-
           popUpFrame.setVisible(true);
         }
       }
     });
 		
-		/* allows user to close out of chat app */
+	/* allows user to close out of chat app */
     jmiExit.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("Exit"))
-
           System.exit(0);
       }
     });
 
     // Main View - outermost graphics panel.
     final JPanel mainViewPanel = new JPanel(new GridBagLayout());
-    mainViewPanel.setBorder(paneBorder());
+    mainViewPanel.setBackground(new Color(85,83,112));
 
     final MessagePanel messagesViewPanel = new MessagePanel(clientContext);
-    messagesViewPanel.setBorder(paneBorder());
+    messagesViewPanel.setOpaque(false);
     final GridBagConstraints messagesViewC = new GridBagConstraints();
 
     // ConversationsPanel gets access to MessagesPanel
     final ConversationPanel conversationsViewPanel = new ConversationPanel(clientContext, messagesViewPanel);
-
-    conversationsViewPanel.setBorder(paneBorder());
+    conversationsViewPanel.setOpaque(false);
     final GridBagConstraints conversationViewC = new GridBagConstraints();
 
     // Placement of main panels.
@@ -153,6 +148,10 @@ public final class ChatSimpleGui {
     conversationViewC.weightx = 0.4;
     conversationViewC.weighty = 0.5;
 
+    /* sets fixed size for the conversations panel */
+    conversationsViewPanel.setPreferredSize(new Dimension(conversationsViewPanel.getPreferredSize().width, 300));
+    conversationsViewPanel.setPreferredSize(new Dimension(conversationsViewPanel.getPreferredSize().height, 400));
+    
     messagesViewC.gridx = 1;
     messagesViewC.gridy = 0;
     messagesViewC.gridwidth = 1;

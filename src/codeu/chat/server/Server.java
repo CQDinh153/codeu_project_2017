@@ -29,20 +29,18 @@ import codeu.chat.common.LinearUuidGenerator;
 import codeu.chat.common.Message;
 import codeu.chat.common.NetworkCode;
 import codeu.chat.common.Relay;
-import codeu.chat.common.User;
-import codeu.chat.util.Logger;
-import codeu.chat.util.Serializers;
 import codeu.chat.util.Time;
 import codeu.chat.util.Timeline;
+import codeu.chat.common.User;
 import codeu.chat.util.Uuid;
+import codeu.chat.util.Logger;
+import codeu.chat.util.Serializers;
 import codeu.chat.util.connections.Connection;
 
 public final class Server {
 
   private static final Logger.Log LOG = Logger.newLog(Server.class);
-
   private static final int RELAY_REFRESH_MS = 5000;  // 5 seconds
-
   private final Timeline timeline = new Timeline();
 
   private final Uuid id;
@@ -51,36 +49,28 @@ public final class Server {
   private final Model model = new Model();
   private final View view = new View(model);
   private final Controller controller;
-
   private final Relay relay;
   private Uuid lastSeen = Uuid.NULL;
 
-  public Server(final Uuid id, final byte[] secret, final Relay relay) {
+  public Server(final Uuid id, final byte[] secret, final Relay relay, Database database) {
 
     this.id = id;
     this.secret = Arrays.copyOf(secret, secret.length);
-
-    this.controller = new Controller(id, model);
+    this.controller = new Controller(id, model, database);
+    controller.loadFromDatabase();
     this.relay = relay;
-
     timeline.scheduleNow(new Runnable() {
       @Override
       public void run() {
         try {
-
           LOG.info("Reading update from relay...");
-
           for (final Relay.Bundle bundle : relay.read(id, secret, lastSeen, 32)) {
             onBundle(bundle);
             lastSeen = bundle.id();
           }
-
         } catch (Exception ex) {
-
           LOG.error(ex, "Failed to read update from relay.");
-
         }
-
         timeline.scheduleIn(RELAY_REFRESH_MS, this);
       }
     });
@@ -91,20 +81,14 @@ public final class Server {
       @Override
       public void run() {
         try {
-
           LOG.info("Handling connection...");
-
           final boolean success = onMessage(
-              connection.in(),
-              connection.out());
-
+            connection.in(),
+            connection.out());
           LOG.info("Connection handled: %s", success ? "ACCEPTED" : "REJECTED");
         } catch (Exception ex) {
-
           LOG.error(ex, "Exception while handling connection.");
-
         }
-
         try {
           connection.close();
         } catch (Exception ex) {
@@ -129,10 +113,7 @@ public final class Server {
       Serializers.INTEGER.write(out, NetworkCode.NEW_MESSAGE_RESPONSE);
       Serializers.nullable(Message.SERIALIZER).write(out, message);
 
-      timeline.scheduleNow(createSendToRelayEvent(
-          author,
-          conversation,
-          message.id));
+      timeline.scheduleNow(createSendToRelayEvent(author, conversation, message.id));
 
     } else if (type == NetworkCode.NEW_USER_REQUEST) {
 
@@ -273,36 +254,35 @@ public final class Server {
       // has a message in the conversation will get ownership over this server's copy
       // of the conversation.
       conversation = controller.newConversation(relayConversation.id(),
-                                                relayConversation.text(),
-                                                user.id,
-                                                relayConversation.time());
+        relayConversation.text(),
+        user.id,
+        relayConversation.time());
     }
 
     Message message = model.messageById().first(relayMessage.id());
 
     if (message == null) {
       message = controller.newMessage(relayMessage.id(),
-                                      user.id,
-                                      conversation.id,
-                                      relayMessage.text(),
-                                      relayMessage.time());
+        user.id,
+        conversation.id,
+        relayMessage.text(),
+        relayMessage.time());
     }
   }
 
-  private Runnable createSendToRelayEvent(final Uuid userId,
-                                          final Uuid conversationId,
-                                          final Uuid messageId) {
+  private Runnable createSendToRelayEvent(final Uuid userId, final Uuid conversationId, final Uuid messageId) {
     return new Runnable() {
       @Override
       public void run() {
         final User user = view.findUser(userId);
         final Conversation conversation = view.findConversation(conversationId);
         final Message message = view.findMessage(messageId);
-        relay.write(id,
-                    secret,
-                    relay.pack(user.id, user.name, user.creation),
-                    relay.pack(conversation.id, conversation.title, conversation.creation),
-                    relay.pack(message.id, message.content, message.creation));
+        relay.write(
+          id,
+          secret,
+          relay.pack(user.id, user.name, user.creation),
+          relay.pack(conversation.id, conversation.title, conversation.creation),
+          relay.pack(message.id, message.content, message.creation));
       }
     };
   }

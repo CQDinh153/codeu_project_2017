@@ -17,9 +17,11 @@ package codeu.chat.client.simplegui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.util.*;
+import java.util.regex.Pattern;
+
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -164,15 +166,26 @@ public final class UserPanel extends JPanel {
     userAddButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        UserPanel.this.getNewUsers();
         final String s = (String) JOptionPane.showInputDialog(
                 UserPanel.this, "Enter user name:", "Add User", JOptionPane.PLAIN_MESSAGE,
                 null, null, "");
         if (s != null && s.length() > 0) {
           UserPanel.this.getAllUsers();
+          Pattern pattern = Pattern.compile("[^a-zA-Z0-9._-]");
+          boolean isNonAlphaNumeric = pattern.matcher(s).find();
+          
           // No duplicate names are allowed
           if (UserPanel.this.userListModel.contains(s)){
             JOptionPane.showMessageDialog(UserPanel.this, "User already exists");
-          } else {
+          }
+          
+          // if special characters other than A-Z, 0-9, periods, or underscores are detected
+          else if (isNonAlphaNumeric){
+            JOptionPane.showMessageDialog(UserPanel.this, "Username must not contain characters other than letters, numbers, underscores, dashes, or periods");
+          }
+          
+          else {
             clientContext.user.addUser(s);
             UserPanel.this.getNewUsers();
           }
@@ -203,15 +216,13 @@ public final class UserPanel extends JPanel {
     // Store all of the names that are received in a HashSet
     HashSet<String> names = new HashSet<>();
     for (final User u : clientContext.user.getUsers()) {
-      // Display the conversation's title
-      names.add(u.name);
-    }
-
-    // Add any names that are new into the display list
-    for (String name: names) {
-      if (!userListModel.contains(name)){
-        userListModel.addElement(name);
+      // If the user's name has not been displayed, display it
+      if (!userListModel.contains(u.name)){
+        userListModel.addElement(u.name);
       }
+
+      // Remember that the name has been displayed
+      names.add(u.name);
     }
 
     // Remove any titles that no longer exist

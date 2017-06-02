@@ -14,13 +14,15 @@
 
 package codeu.chat.client.simplegui;
 
+import java.util.HashSet;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.*;
-import java.util.HashSet;
-import java.util.Timer;
-import java.util.TimerTask;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -50,34 +52,86 @@ public final class ConversationPanel extends JPanel {
     // a list of conversations, and a button bar.
 
     // Title
-    final JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    final JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    titlePanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints titlePanelC = new GridBagConstraints();
     titlePanelC.gridx = 0;
     titlePanelC.gridy = 0;
     titlePanelC.anchor = GridBagConstraints.PAGE_START;
 
-    final JLabel titleLabel = new JLabel("Conversations", JLabel.LEFT);
-    titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    final JLabel titleLabel = new JLabel("CONVERSATIONS", JLabel.LEFT);
+    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+    titleLabel.setFont(new Font("Lucida Grande", Font.BOLD, 15));
+    titleLabel.setForeground(new Color(188, 32, 49));
     titlePanel.add(titleLabel);
 
     // Conversation list
     final JPanel listShowPanel = new JPanel();
+    listShowPanel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+    listShowPanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints listPanelC = new GridBagConstraints();
 
+    conversationList.setFixedCellHeight(25); // adjusts spacing in between cells
     conversationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     conversationList.setVisibleRowCount(15);
     conversationList.setSelectedIndex(-1);
+    conversationList.setCellRenderer(new ConversationRenderer());
+    conversationList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // top, left, bottom, right
+    conversationList.setOpaque(false);
 
     final JScrollPane listScrollPane = new JScrollPane(conversationList);
     listShowPanel.add(listScrollPane);
-    listScrollPane.setMinimumSize(new Dimension(250, 200));
+    listScrollPane.setOpaque(false);
+    listScrollPane.setBackground(new Color(238, 238, 238));
+    listScrollPane.setMinimumSize(new Dimension(260, 200));
+    listScrollPane.setPreferredSize(new Dimension(260, 320));
+    listScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    
+    // scrollbar visual components
+    listScrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI()
+    {
+      protected JButton createDecreaseButton(int orientation) {
+        JButton button = super.createDecreaseButton(orientation);
+        modifyButton(button);
+        return button;
+      }
+      
+      protected JButton createIncreaseButton(int orientation) {
+        JButton button = super.createIncreaseButton(orientation);
+        modifyButton(button);
+        return button;
+      }
+      
+      // helper method to change increment & decrement buttons to a default style
+      private JButton modifyButton(JButton button) {
+        button.setBackground(new Color(188, 32, 49, 0));
+        button.setForeground(new Color(188, 32, 49, 0));
+        button.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        return button;
+      }
+
+      protected void configureScrollBarColors() {
+        trackColor = new Color(255, 255, 255, 0);
+        thumbColor = new Color(188, 32, 49);
+      }
+    });
 
     // Button bar
     final JPanel buttonPanel = new JPanel();
+    buttonPanel.setBackground(new Color(216, 216, 216));
     final GridBagConstraints buttonPanelC = new GridBagConstraints();
 
-    final JButton updateButton = new JButton("Update");
-    final JButton addButton = new JButton("Add");
+    final JButton updateButton = new JButton("update");
+    updateButton.setBackground(new Color(188, 32, 49));
+    updateButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+    updateButton.setForeground(Color.WHITE);
+    updateButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+    final JButton addButton = new JButton("add");
+    addButton.setBackground(new Color(188, 32, 49));
+    addButton.setForeground(Color.WHITE);
+    addButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+    addButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
 
     updateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
     buttonPanel.add(updateButton);
@@ -125,15 +179,18 @@ public final class ConversationPanel extends JPanel {
     addButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        ConversationPanel.this.getNewConversations();
         if (clientContext.user.hasCurrent()) {
           final String s = (String) JOptionPane.showInputDialog(
-            ConversationPanel.this, "Enter title:", "Add Conversation", JOptionPane.PLAIN_MESSAGE,
-            null, null, "");
+              ConversationPanel.this, "Enter title:", "Add Conversation", JOptionPane.PLAIN_MESSAGE,
+              null, null, "");
           if (s != null && s.length() > 0) {
             ConversationPanel.this.getAllConversations();
             // No duplicate names are allowed
             if (ConversationPanel.this.convListModel.contains(s)) {
               JOptionPane.showMessageDialog(ConversationPanel.this, "Conversation already exists");
+            } else if (s.length() > 40) { // conversation name length should not exceed 40 characters
+              JOptionPane.showMessageDialog(ConversationPanel.this, "Max length for a conversation name is 40 characters");
             } else {
               clientContext.conversation.startConversation(s, clientContext.user.getCurrent().id);
               ConversationPanel.this.getNewConversations();
@@ -157,7 +214,7 @@ public final class ConversationPanel extends JPanel {
 
           clientContext.conversation.setCurrent(cs);
 
-          messagePanel.update(cs);
+          messagePanel.update(clientContext.conversation.getCurrent());
         }
       }
     });
@@ -165,7 +222,9 @@ public final class ConversationPanel extends JPanel {
     getAllConversations();
   }
 
-  // Populate ListModel - updates display objects.
+  /**
+   * Populate ListModel - updates display objects.
+   */
   public void getNewConversations() {
 
     // Get all of the conversations
@@ -174,15 +233,13 @@ public final class ConversationPanel extends JPanel {
     // Store all of the titles that are received in a HashSet
     HashSet<String> titles = new HashSet<>();
     for (final ConversationSummary conv : clientContext.conversation.getConversationSummaries()) {
-      // Display the conversation's title
-      titles.add(conv.title);
-    }
-
-    // Add any titles that are new into the display list
-    for (String title: titles) {
-      if (!convListModel.contains(title)){
-        convListModel.addElement(title);
+      // If the title has not been displayed, display it
+      if (!convListModel.contains(conv.title)){
+        convListModel.addElement(conv.title);
       }
+
+      // Remember that this title has been displayed
+      titles.add(conv.title);
     }
 
     // Remove any titles that no longer exist
@@ -193,16 +250,19 @@ public final class ConversationPanel extends JPanel {
     }
   }
 
-  // Force the conversations list to reload all of the titles
+  /**
+   * Force the conversations list to reload all of the titles
+   */
   private void getAllConversations() {
     convListModel.clear();
     getNewConversations();
   }
 
-  // Locate the Conversation object for a selected title string.
-  // index handles possible duplicate titles.
+  /**
+   * Locate the Conversation object for a selected title string.
+   * index handles possible duplicate titles.
+   */
   private ConversationSummary lookupByTitle(String title, int index) {
-
     int localIndex = 0;
     for (final ConversationSummary cs : clientContext.conversation.getConversationSummaries()) {
       if ((localIndex >= index) && cs.title.equals(title)) {

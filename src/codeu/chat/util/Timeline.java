@@ -118,8 +118,8 @@ public final class Timeline {
           // Catch all exceptions here to stop any rogue action from
           // take down the timeline.
           LOG.warning(
-              "An exception was seen on the timeline (%s)",
-              ex.toString());
+            "An exception was seen on the timeline (%s)",
+            ex.toString());
         }
       }
     }

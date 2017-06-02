@@ -40,9 +40,9 @@ public final class User {
     public User read(InputStream in) throws IOException {
 
       return new User(
-          Uuid.SERIALIZER.read(in),
-          Serializers.STRING.read(in),
-          Time.SERIALIZER.read(in)
+        Uuid.SERIALIZER.read(in),
+        Serializers.STRING.read(in),
+        Time.SERIALIZER.read(in)
       );
 
     }

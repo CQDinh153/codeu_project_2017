@@ -124,7 +124,7 @@ public final class Server implements Relay {
   // As a side note, the ids start at 1 and not 0 to avoid the first id from
   // matching the NULL id which is defined as (null, 0);
 
- private final Uuid.Generator idGenerator = new LinearUuidGenerator(null, 1, Integer.MAX_VALUE);
+  private final Uuid.Generator idGenerator = new LinearUuidGenerator(null, 1, Integer.MAX_VALUE);
 
   // SERVER
   //
@@ -153,8 +153,8 @@ public final class Server implements Relay {
     }
 
     LOG.info(open ?
-             "Adding team was successful" :
-             "Adding team failed - team id already exists");
+      "Adding team was successful" :
+      "Adding team failed - team id already exists");
 
     return open;
   }
@@ -174,31 +174,31 @@ public final class Server implements Relay {
     if (authenticate(teamId, teamSecret)) {
 
       LOG.info(
-          "Writing to server team=%s user=%s conversation=%s message=%s",
-          teamId,
-          user.id(),
-          conversation.id(),
-          message.id());
+        "Writing to server team=%s user=%s conversation=%s message=%s",
+        teamId,
+        user.id(),
+        conversation.id(),
+        message.id());
 
       if (history.size() >= maxHistory) {
-         history.remove();
+        history.remove();
       }
 
       return history.offer(new Bundle(
-          idGenerator.make(),
-          Time.now(),
-          teamId,
-          user,
-          conversation,
-          message));
+        idGenerator.make(),
+        Time.now(),
+        teamId,
+        user,
+        conversation,
+        message));
     } else {
 
       LOG.warning(
-          "Unauthorized write attempt to server team=%s user=%s conversation=%s message=%s",
-          teamId,
-          user.id(),
-          conversation.id(),
-          message.id());
+        "Unauthorized write attempt to server team=%s user=%s conversation=%s message=%s",
+        teamId,
+        user.id(),
+        conversation.id(),
+        message.id());
 
       return false;
     }
@@ -212,9 +212,9 @@ public final class Server implements Relay {
     if (authenticate(teamId, teamSecret)) {
 
       LOG.info(
-         "Request to read from server requested=%d allowed=%d",
-          range,
-          maxRead);
+        "Request to read from server requested=%d allowed=%d",
+        range,
+        maxRead);
 
       for (final Relay.Bundle message : history) {
 
@@ -231,15 +231,15 @@ public final class Server implements Relay {
       }
 
       LOG.info(
-          "Read request complete requested=%d fullfilled=%d",
-          range,
-          found.size());
+        "Read request complete requested=%d fullfilled=%d",
+        range,
+        found.size());
 
     } else {
 
       LOG.info(
-          "Unauthroized attempt to read from server team=%s",
-          teamId);
+        "Unauthroized attempt to read from server team=%s",
+        teamId);
     }
 
     return found;
