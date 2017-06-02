@@ -131,3 +131,7 @@ $ sh run_simple_gui_client.sh <HOST> <PORT>
 HOST is the address of the server
   
 PORT is the port that the server is listening to
+
+## Libraries Used
+[JUnit 4](http://junit.org/junit4/)
+[SQLite JDBC](https://github.com/xerial/sqlite-jdbc)
