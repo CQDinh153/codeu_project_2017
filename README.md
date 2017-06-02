@@ -134,18 +134,14 @@ PORT is the port that the server is listening to
 
 # Parameters
 For testing, we used:
-
+```
 TEST_DATABASE: testDatabase.db
-
 DATABASE: serverState.db
-
 TEAM_ID: 100
-
 TEAM_SECRET: ABABAB
-
 HOST: LOCALHOST
-
 PORT: 2007
+```
 ## Libraries Used
 [JUnit 4](http://junit.org/junit4/)
 
