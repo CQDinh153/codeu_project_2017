@@ -19,114 +19,115 @@ or in a bash shell on Windows. However, some of them have variations for LINUX
 and Windows.
 
 ## LINUX
-  1. To build the project:
-  ```
-  $ sh clean.sh
-  $ sh make_unix.sh
-  ```
-  
-  2. To test the project you will need to set up a database 
-  for the tests to use and then run the test script. To do
-  this, run the following two commands:
-  ```
-  $ sh setup_database_unix.sh <TEST_DATABASE>
-  $ sh test_unix.sh <TEST_DATABASE>
-  ```
-  TEST_DATABASE must be a path that Java can interpret as a file. 
-  Relative paths are in reference to the /bin/ folder in the repo.
-  
-  3. Before you run the project for the first time, you will need 
-  to set up a database for server data to be stored in. To set up
-  a database, run the command:
-  ```
-  $ sh setup_database_unix.sh <DATABASE>
-  ```
-  DATABASE must be a path that Java can interpret as a file. 
-  Relative paths are in reference to the /bin/ folder in the repo.
+# Build
+To build the project, run the commands
+```
+$ sh clean.sh
+$ sh make_unix.sh
+```
+# Test  
+To test the project you will need to set up a database 
+for the tests to use and then run the test script. To do
+this, run the following two commands:
+```
+$ sh setup_database_unix.sh <TEST_DATABASE>
+$ sh test_unix.sh <TEST_DATABASE>
+```
+TEST_DATABASE must be a path that Java can interpret as a file. 
+Relative paths are in reference to the /bin/ folder in the repo.
+# Setup  
+Before you run the project for the first time, you will need 
+to set up a database for server data to be stored in. To set up
+a database, run the command:
+```
+$ sh setup_database_unix.sh <DATABASE>
+```
+DATABASE must be a path that Java can interpret as a file. 
+Relative paths are in reference to the /bin/ folder in the repo.
+# Run Server
+Once you have a database for the server to use, run the following
+command to start a server:
+```
+$ sh run_server_unix.sh <TEAM_ID> <TEAM_SECRET> <PORT> <PERSISTENT_DB>
+```
+TEAM_ID is the id registered with the relay server. If you are not 
+connecting to a relay server, use "100".
 
-  4. Once you have a database for the server to use, run the following
-  command to start a server:
-  ```
-  $ sh run_server_unix.sh <TEAM_ID> <TEAM_SECRET> <PORT> <PERSISTENT_DB>
-  ```
-  TEAM_ID is the id registered with the relay server. If you are not 
-  connecting to a relay server, use "100".
+TEAM_SECRET is the secret registered with the relay server. If you are
+not connecting to a relay server, use "ABABAB".
   
-  TEAM_SECRET is the secret registered with the relay server. If you are
-  not connecting to a relay server, use "ABABAB".
+PORT is the port that the server will listen to for incoming connections. 
+This can be anything from 1024 to 65535.
   
-  PORT is the port that the server will listen to for incoming connections. 
-  This can be anything from 1024 to 65535.
+PERSISTENT_DB is the path to the SQLite database file where the server
+will save data between runs.
+# Run Clients
+Each client is started in a separate shell or on another computer.
+To run the client in command-line mode, run the command:
+```
+$ sh run_client.sh <HOST> <PORT>
+```
+To run it in GUI mode, run the command:
+```
+$ sh run_simple_gui_client.sh <HOST> <PORT>
+```
+HOST is the address of the server
   
-  PERSISTENT_DB is the path to the SQLite database file where the server
-  will save data between runs.
-  
-  5. Each client is started in a separate shell or on another computer.
-  To run the client in command-line mode, run the command:
-  ```
-  $ sh run_client.sh <HOST> <PORT>
-  ```
-  To run it in GUI mode, run the command:
-  ```
-  $ sh run_simple_gui_client.sh <HOST> <PORT>
-  ```
-  HOST is the address of the server
-  
-  PORT is the port that the server is listening to
+PORT is the port that the server is listening to
   
 ## Windows
-  1. To build the project:
-  ```
-  $ sh clean.sh
-  $ sh make_windows.sh
-  ```
-  
-  2. To test the project you will need to set up a database 
-  for the tests to use and then run the test script. To do
-  this, run the following two commands:
-  ```
-  $ sh setup_database_windows.sh <TEST_DATABASE>
-  $ sh test_windows.sh <TEST_DATABASE>
-  ```
-  <TEST_DATABASE> must be a path that Java can interpret as a file. 
-  Relative paths are in reference to the /bin/ folder in the repo.
-  
-  3. Before you run the project for the first time, you will need 
-  to set up a database for server data to be stored in. To set up
-  a database, run the command:
-  ```
-  $ sh setup_database_windows.sh <DATABASE>
-  ```
-  DATABASE must be a path that Java can interpret as a file. 
-  Relative paths are in reference to the /bin/ folder in the repo.
+# Build
+To build the project, run the commands
+```
+$ sh clean.sh
+$ sh make_windows.sh
+```
+# Test  
+To test the project you will need to set up a database 
+for the tests to use and then run the test script. To do
+this, run the following two commands:
+```
+$ sh setup_database_windows.sh <TEST_DATABASE>
+$ sh test_windows.sh <TEST_DATABASE>
+```
+TEST_DATABASE must be a path that Java can interpret as a file. 
+Relative paths are in reference to the /bin/ folder in the repo.
+# Setup  
+Before you run the project for the first time, you will need 
+to set up a database for server data to be stored in. To set up
+a database, run the command:
+```
+$ sh setup_database_windows.sh <DATABASE>
+```
+DATABASE must be a path that Java can interpret as a file. 
+Relative paths are in reference to the /bin/ folder in the repo.
+# Run Server
+Once you have a database for the server to use, run the following
+command to start a server:
+```
+$ sh run_server_windows.sh <TEAM_ID> <TEAM_SECRET> <PORT> <PERSISTENT_DB>
+```
+TEAM_ID is the id registered with the relay server. If you are not 
+connecting to a relay server, use "100".
 
-  4. Once you have a database for the server to use, run the following
-  command to start a server:
-  ```
-  $ sh run_server_windows.sh <TEAM_ID> <TEAM_SECRET> <PORT> <PERSISTENT_DB>
-  ```
-  TEAM_ID is the id registered with the relay server. If you are not 
-  connecting to a relay server, use "100".
+TEAM_SECRET is the secret registered with the relay server. If you are
+not connecting to a relay server, use "ABABAB".
   
-  TEAM_SECRET is the secret registered with the relay server. If you are
-  not connecting to a relay server, use "ABABAB".
+PORT is the port that the server will listen to for incoming connections. 
+This can be anything from 1024 to 65535.
   
-  PORT is the port that the server will listen to for incoming connections. 
-  This can be anything from 1024 to 65535.
+PERSISTENT_DB is the path to the SQLite database file where the server
+will save data between runs.
+# Run Clients
+Each client is started in a separate shell or on another computer.
+To run the client in command-line mode, run the command:
+```
+$ sh run_client.sh <HOST> <PORT>
+```
+To run it in GUI mode, run the command:
+```
+$ sh run_simple_gui_client.sh <HOST> <PORT>
+```
+HOST is the address of the server
   
-  PERSISTENT_DB is the path to the SQLite database file where the server
-  will save data between runs.
-  
-  5. Each client is started in a separate shell or on another computer.
-  To run the client in command-line mode, run the command:
-  ```
-  $ sh run_client.sh <HOST> <PORT>
-  ```
-  To run it in GUI mode, run the command:
-  ```
-  $ sh run_simple_gui_client.sh <HOST> <PORT>
-  ```
-  HOST is the address of the server
-  
-  PORT is the port that the server is listening to
-  
+PORT is the port that the server is listening to
