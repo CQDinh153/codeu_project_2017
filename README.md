@@ -48,7 +48,7 @@ Relative paths are in reference to the /bin/ folder in the repo.
 Once you have a database for the server to use, run the following
 command to start a server:
 ```
-$ sh run_server_unix.sh <TEAM_ID> <TEAM_SECRET> <PORT> <PERSISTENT_DB>
+$ sh run_server_unix.sh <TEAM_ID> <TEAM_SECRET> <PORT> <DATABASE>
 ```
 TEAM_ID is the id registered with the relay server. If you are not 
 connecting to a relay server, use "100".
@@ -59,7 +59,7 @@ not connecting to a relay server, use "ABABAB".
 PORT is the port that the server will listen to for incoming connections. 
 This can be anything from 1024 to 65535.
   
-PERSISTENT_DB is the path to the SQLite database file where the server
+DATABASE is the path to the SQLite database file where the server
 will save data between runs.
 # Run Clients
 Each client is started in a separate shell or on another computer.
@@ -105,7 +105,7 @@ Relative paths are in reference to the /bin/ folder in the repo.
 Once you have a database for the server to use, run the following
 command to start a server:
 ```
-$ sh run_server_windows.sh <TEAM_ID> <TEAM_SECRET> <PORT> <PERSISTENT_DB>
+$ sh run_server_windows.sh <TEAM_ID> <TEAM_SECRET> <PORT> <DATABASE>
 ```
 TEAM_ID is the id registered with the relay server. If you are not 
 connecting to a relay server, use "100".
@@ -116,7 +116,7 @@ not connecting to a relay server, use "ABABAB".
 PORT is the port that the server will listen to for incoming connections. 
 This can be anything from 1024 to 65535.
   
-PERSISTENT_DB is the path to the SQLite database file where the server
+DATABASE is the path to the SQLite database file where the server
 will save data between runs.
 # Run Clients
 Each client is started in a separate shell or on another computer.
@@ -132,6 +132,15 @@ HOST is the address of the server
   
 PORT is the port that the server is listening to
 
+# Parameters
+For testing, we used:
+TEST_DATABASE: testDatabase.db
+DATABASE: serverState.db
+TEAM_ID: 100
+TEAM_SECRET: ABABAB
+HOST: LOCALHOST
+PORT: 2007
 ## Libraries Used
 [JUnit 4](http://junit.org/junit4/)
+
 [SQLite JDBC](https://github.com/xerial/sqlite-jdbc)
