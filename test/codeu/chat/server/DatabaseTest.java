@@ -22,11 +22,9 @@ import org.junit.Before;
 
 import codeu.chat.common.Conversation;
 import codeu.chat.common.Message;
-import codeu.chat.common.RawController;
-import codeu.chat.common.Time;
+import codeu.chat.util.Time;
 import codeu.chat.common.User;
-import codeu.chat.common.Uuid;
-import codeu.chat.common.Uuids;
+import codeu.chat.util.Uuid;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,7 +48,7 @@ public final class DatabaseTest {
   public void doBefore() {
     model = new Model();
     database = new Database(System.getProperty("TestDatabase"));
-    controller = new Controller(Uuids.NULL, model, database);
+    controller = new Controller(Uuid.NULL, model, database);
 
     userId = controller.buildUuid(11);
     conversationUserId = controller.buildUuid(12);
@@ -77,7 +75,7 @@ public final class DatabaseTest {
       user == null);
     assertTrue(
       "Check that the user has the correct id",
-      Uuids.equals(user.id, userId));
+      Uuid.equals(user.id, userId));
 
     User dbUser = null;
 
@@ -131,7 +129,7 @@ public final class DatabaseTest {
       user == null);
     assertTrue(
       "Check that the user has the correct id",
-      Uuids.equals(user.id, conversationUserId));
+      Uuid.equals(user.id, conversationUserId));
 
     final Conversation conversation = controller.newConversation(
       conversationId,
@@ -144,7 +142,7 @@ public final class DatabaseTest {
       conversation == null);
     assertTrue(
       "Check that the conversation has the correct id",
-      Uuids.equals(conversation.id, conversationId));
+      Uuid.equals(conversation.id, conversationId));
 
     Conversation dbConversation = null;
 
@@ -205,7 +203,7 @@ public final class DatabaseTest {
       user == null);
     assertTrue(
       "Check that the user has the correct id",
-      Uuids.equals(user.id, messageUserId));
+      Uuid.equals(user.id, messageUserId));
 
     final Conversation conversation = controller.newConversation(
       messageConversationId,
@@ -218,7 +216,7 @@ public final class DatabaseTest {
       conversation == null);
     assertTrue(
       "Check that the conversation has the correct id",
-      Uuids.equals(conversation.id, messageConversationId));
+      Uuid.equals(conversation.id, messageConversationId));
 
     final Message message = controller.newMessage(
       messageId,
@@ -232,7 +230,7 @@ public final class DatabaseTest {
       message == null);
     assertTrue(
       "Check that the message has the correct id",
-      Uuids.equals(message.id, messageId));
+      Uuid.equals(message.id, messageId));
 
     Message dbMessage = null;
     Conversation foundConv = null;
@@ -277,11 +275,11 @@ public final class DatabaseTest {
     );
 
     // Create a new Conversation based on the database info
-    dbMessage = new Message(messageID, Uuids.NULL, Uuids.NULL, creation, foundUser.id, content);
-    if (!Uuids.equals(foundConv.lastMessage, Uuids.NULL)) {
+    dbMessage = new Message(messageID, Uuid.NULL, Uuid.NULL, creation, foundUser.id, content);
+    if (!Uuid.equals(foundConv.lastMessage, Uuid.NULL)) {
       model.messageById().first(foundConv.lastMessage).next = messageID;
     }
-    if (Uuids.equals(foundConv.firstMessage, Uuids.NULL)) {
+    if (Uuid.equals(foundConv.firstMessage, Uuid.NULL)) {
       foundConv.firstMessage = messageID;
     }
 
@@ -312,19 +310,5 @@ public final class DatabaseTest {
       foundConv.id.id() == conversation.id.id()
     );
 
-  }
-
-  private static Uuid newTestId(final int id) {
-    return Uuids.complete(new Uuid() {
-      @Override
-      public Uuid root() {
-        return null;
-      }
-
-      @Override
-      public int id() {
-        return id;
-      }
-    });
   }
 }

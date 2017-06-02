@@ -15,11 +15,15 @@
 package codeu.chat.server;
 
 import static org.junit.Assert.*;
-
-import codeu.chat.common.*;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.Before;
+
+import codeu.chat.common.BasicController;
+import codeu.chat.common.Conversation;
+import codeu.chat.common.Message;
+import codeu.chat.common.User;
+import codeu.chat.util.Uuid;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +38,7 @@ public final class BasicControllerTest {
   public void doBefore() {
     model = new Model();
     database = new Database(System.getProperty("TestDatabase"));
-    controller = new Controller(Uuids.NULL, model, database);
+    controller = new Controller(Uuid.NULL, model, database);
   }
 
   @After

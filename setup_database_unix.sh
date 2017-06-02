@@ -14,5 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+DATABASE = "$1"
+
+if [ "$DATABASE" == "" ] ; then
+    echo "usage: <DATABASE>"
+    echo ""
+    echo "DATABASE : The path of the database file to set up"
+    exit 1
+fi
+
 cd './bin'
-java -cp ".:sqlite-jdbc.jar" codeu.chat.DatabaseSetup "serverState.db"
+java -cp ".:sqlite-jdbc.jar" codeu.chat.DatabaseSetup "$DATABASE"

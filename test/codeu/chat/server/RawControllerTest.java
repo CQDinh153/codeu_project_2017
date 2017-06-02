@@ -23,10 +23,9 @@ import org.junit.Before;
 import codeu.chat.common.Conversation;
 import codeu.chat.common.Message;
 import codeu.chat.common.RawController;
-import codeu.chat.common.Time;
 import codeu.chat.common.User;
-import codeu.chat.common.Uuid;
-import codeu.chat.common.Uuids;
+import codeu.chat.util.Time;
+import codeu.chat.util.Uuid;
 
 import java.sql.SQLException;
 
@@ -49,16 +48,16 @@ public final class RawControllerTest {
   public void doBefore() {
     model = new Model();
     database = new Database(System.getProperty("TestDatabase"));
-    controller = new Controller(Uuids.NULL, model, database);
+    controller = new Controller(Uuid.NULL, model, database);
 
-    userId = newTestId(1);
-    conversationUserId = newTestId(2);
-    messageUserId = newTestId(3);
+    userId = new Uuid(1);
+    conversationUserId = new Uuid(2);
+    messageUserId = new Uuid(3);
 
-    conversationId = newTestId(4);
-    messageConversationId = newTestId(5);
+    conversationId = new Uuid(4);
+    messageConversationId = new Uuid(5);
 
-    messageId = newTestId(6);
+    messageId = new Uuid(6);
   }
 
   @After
@@ -76,7 +75,7 @@ public final class RawControllerTest {
         user == null);
     assertTrue(
         "Check that the user has the correct id",
-        Uuids.equals(user.id, userId));
+        Uuid.equals(user.id, userId));
   }
 
   @Test
@@ -89,7 +88,7 @@ public final class RawControllerTest {
         user == null);
     assertTrue(
         "Check that the user has the correct id",
-        Uuids.equals(user.id, conversationUserId));
+        Uuid.equals(user.id, conversationUserId));
 
     final Conversation conversation = controller.newConversation(
         conversationId,
@@ -102,7 +101,7 @@ public final class RawControllerTest {
         conversation == null);
     assertTrue(
         "Check that the conversation has the correct id",
-        Uuids.equals(conversation.id, conversationId));
+        Uuid.equals(conversation.id, conversationId));
   }
 
   @Test
@@ -115,7 +114,7 @@ public final class RawControllerTest {
         user == null);
     assertTrue(
         "Check that the user has the correct id",
-        Uuids.equals(user.id, messageUserId));
+        Uuid.equals(user.id, messageUserId));
 
     final Conversation conversation = controller.newConversation(
         messageConversationId,
@@ -128,7 +127,7 @@ public final class RawControllerTest {
         conversation == null);
     assertTrue(
         "Check that the conversation has the correct id",
-        Uuids.equals(conversation.id, messageConversationId));
+        Uuid.equals(conversation.id, messageConversationId));
 
     final Message message = controller.newMessage(
         messageId,
@@ -142,15 +141,6 @@ public final class RawControllerTest {
         message == null);
     assertTrue(
         "Check that the message has the correct id",
-        Uuids.equals(message.id, messageId));
-  }
-
-  private static Uuid newTestId(final int id) {
-    return Uuids.complete(new Uuid() {
-      @Override
-      public Uuid root() { return null; }
-      @Override
-      public int id() { return id; }
-    });
+        Uuid.equals(message.id, messageId));
   }
 }

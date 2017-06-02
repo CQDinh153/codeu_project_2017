@@ -24,10 +24,10 @@ import java.util.Queue;
 
 import codeu.chat.common.LinearUuidGenerator;
 import codeu.chat.common.Relay;
-import codeu.chat.common.Time;
-import codeu.chat.common.Uuid;
-import codeu.chat.common.Uuids;
 import codeu.chat.util.Logger;
+import codeu.chat.util.Time;
+import codeu.chat.util.Logger;
+import codeu.chat.util.Uuid;
 
 public final class Server implements Relay {
 
@@ -124,7 +124,7 @@ public final class Server implements Relay {
   // As a side note, the ids start at 1 and not 0 to avoid the first id from
   // matching the NULL id which is defined as (null, 0);
 
- private final Uuid.Generator idGenerator = new LinearUuidGenerator(null, 1, Integer.MAX_VALUE);
+  private final Uuid.Generator idGenerator = new LinearUuidGenerator(null, 1, Integer.MAX_VALUE);
 
   // SERVER
   //
@@ -153,8 +153,8 @@ public final class Server implements Relay {
     }
 
     LOG.info(open ?
-             "Adding team was successful" :
-             "Adding team failed - team id already exists");
+      "Adding team was successful" :
+      "Adding team failed - team id already exists");
 
     return open;
   }
@@ -174,31 +174,31 @@ public final class Server implements Relay {
     if (authenticate(teamId, teamSecret)) {
 
       LOG.info(
-          "Writing to server team=%s user=%s conversation=%s message=%s",
-          teamId,
-          user.id(),
-          conversation.id(),
-          message.id());
+        "Writing to server team=%s user=%s conversation=%s message=%s",
+        teamId,
+        user.id(),
+        conversation.id(),
+        message.id());
 
       if (history.size() >= maxHistory) {
-         history.remove();
+        history.remove();
       }
 
       return history.offer(new Bundle(
-          idGenerator.make(),
-          Time.now(),
-          teamId,
-          user,
-          conversation,
-          message));
+        idGenerator.make(),
+        Time.now(),
+        teamId,
+        user,
+        conversation,
+        message));
     } else {
 
       LOG.warning(
-          "Unauthorized write attempt to server team=%s user=%s conversation=%s message=%s",
-          teamId,
-          user.id(),
-          conversation.id(),
-          message.id());
+        "Unauthorized write attempt to server team=%s user=%s conversation=%s message=%s",
+        teamId,
+        user.id(),
+        conversation.id(),
+        message.id());
 
       return false;
     }
@@ -211,41 +211,35 @@ public final class Server implements Relay {
 
     if (authenticate(teamId, teamSecret)) {
 
-      int remaining = Math.min(range, maxRead);
-
       LOG.info(
-         "Request to read from server requested=%d allowed=%d",
-          range,
-          maxRead);
-
-      // Writing is a one way flag (once set it will not be unset) that switches
-      // between looking for the starting message and writing all messages to the
-      // output.
-      boolean writing = root == Uuids.NULL || root == null;
+        "Request to read from server requested=%d allowed=%d",
+        range,
+        maxRead);
 
       for (final Relay.Bundle message : history) {
 
-        if (writing && remaining > 0) {
+        // Only add a message if there is room. We cannot stop
+        // searching in case we see the root later on.
+        if (found.size() < Math.min(range, maxRead)) {
           found.add(message);
         }
 
-        remaining = Math.max(remaining - 1, 0);
-
-        // Only update "writing" after the check as the root is already known and
-        // should not be included in the output.
-        writing |= Uuids.equals(root, message.id());
+        // If the start is found, drop all previous messages.
+        if (message.id().equals(root)) {
+          found.clear();
+        }
       }
 
       LOG.info(
-          "Read request complete requested=%d fullfilled=%d",
-          range,
-          found.size());
+        "Read request complete requested=%d fullfilled=%d",
+        range,
+        found.size());
 
     } else {
 
       LOG.info(
-          "Unauthroized attempt to read from server team=%s",
-          teamId);
+        "Unauthroized attempt to read from server team=%s",
+        teamId);
     }
 
     return found;

@@ -1,8 +1,8 @@
 package codeu.chat.server;
 
 import codeu.chat.common.*;
-import codeu.chat.common.Time;
 import codeu.chat.util.Logger;
+import codeu.chat.util.Uuid;
 
 import java.sql.*;
 

@@ -17,17 +17,15 @@ package codeu.chat;
 
 import java.io.IOException;
 
-import codeu.chat.common.Hub;
 import codeu.chat.common.Relay;
 import codeu.chat.common.Secret;
-import codeu.chat.common.Uuid;
-import codeu.chat.common.Uuids;
 import codeu.chat.server.Database;
 import codeu.chat.server.NoOpRelay;
 import codeu.chat.server.RemoteRelay;
 import codeu.chat.server.Server;
 import codeu.chat.util.Logger;
 import codeu.chat.util.RemoteAddress;
+import codeu.chat.util.Uuid;
 import codeu.chat.util.connections.ClientConnectionSource;
 import codeu.chat.util.connections.Connection;
 import codeu.chat.util.connections.ConnectionSource;
@@ -49,11 +47,19 @@ final class ServerMain {
 
     LOG.info("============================= START OF LOG =============================");
 
-    final Uuid id = Uuids.fromString(args[0]);
+    Uuid id = null;
+    try {
+      id = Uuid.parse(args[0]);
+    } catch (IOException ex) {
+      System.out.println("Invalid id - shutting down server");
+      System.exit(1);
+    }
+
     final byte[] secret = Secret.parse(args[1]);
 
     final int myPort = Integer.parseInt(args[2]);
 
+    // This is the path of the SQLite database file that stores data
     final String databaseFilename = args[3];
 
     final RemoteAddress relayAddress = args.length > 4 ?
@@ -89,30 +95,20 @@ final class ServerMain {
 
     final Server server = new Server(id, secret, relay, database);
 
-    LOG.info("Server object created.");
+    LOG.info("Created Server");
 
-    final Runnable hub = new Hub(serverSource, new Hub.Handler() {
+    while (true) {
+      try {
 
-      @Override
-      public void handle(Connection connection) throws Exception {
+        LOG.info("Established connection...");
+        final Connection connection = serverSource.connect();
+        LOG.info("Connection established.");
 
         server.handleConnection(connection);
 
+      } catch (IOException ex) {
+        LOG.error(ex, "Failed to establish connection.");
       }
-
-      @Override
-      public void onException(Exception ex) {
-
-        System.out.println("ERROR: Exception during server tick. Check log for details.");
-        LOG.error(ex, "Exception during server tick.");
-
-      }
-    });
-
-    LOG.info("Starting hub...");
-
-    hub.run();
-
-    LOG.info("Hub exited.");
+    }
   }
 }

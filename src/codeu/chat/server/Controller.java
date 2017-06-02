@@ -14,22 +14,22 @@
 
 package codeu.chat.server;
 
+import java.util.Collection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import codeu.chat.common.BasicController;
 import codeu.chat.common.Conversation;
 import codeu.chat.common.Message;
+import codeu.chat.common.RandomUuidGenerator;
 import codeu.chat.common.RawController;
-import codeu.chat.common.Time;
 import codeu.chat.common.User;
-import codeu.chat.common.Uuid;
-import codeu.chat.common.Uuids;
 import codeu.chat.util.Logger;
+import codeu.chat.util.Time;
+import codeu.chat.util.Uuid;
 
 
 public final class Controller implements RawController, BasicController {
-
   private final static Logger.Log LOG = Logger.newLog(Controller.class);
 
   private final Model model;
@@ -70,7 +70,7 @@ public final class Controller implements RawController, BasicController {
 
     if (foundUser != null && foundConversation != null && isIdFree(id)) {
 
-      message = new Message(id, Uuids.NULL, Uuids.NULL, creationTime, foundUser.id, body);
+      message = new Message(id, Uuid.NULL, Uuid.NULL, creationTime, foundUser.id, body);
 
       // If saving the message succeeds, add it to the model
       if (database.saveMessage(message, foundConversation.id)) {
@@ -80,7 +80,7 @@ public final class Controller implements RawController, BasicController {
         // Find and update the previous "last" message so that it's "next" value
         // will point to the new message.
 
-        if (Uuids.equals(foundConversation.lastMessage, Uuids.NULL)) {
+        if (Uuid.equals(foundConversation.lastMessage, Uuid.NULL)) {
 
           // The conversation has no messages in it, that's why the last message is NULL (the first
           // message should be NULL too. Since there is no last message, then it is not possible
@@ -96,7 +96,7 @@ public final class Controller implements RawController, BasicController {
         // not change.
 
         foundConversation.firstMessage =
-          Uuids.equals(foundConversation.firstMessage, Uuids.NULL) ?
+          Uuid.equals(foundConversation.firstMessage, Uuid.NULL) ?
             message.id :
             foundConversation.firstMessage;
 
@@ -189,12 +189,7 @@ public final class Controller implements RawController, BasicController {
   }
 
   public Uuid buildUuid(int id){
-    return Uuids.complete(new Uuid() {
-      @Override
-      public Uuid root() { return serverId; }
-      @Override
-      public int id() { return id; }
-    });
+    return new Uuid(serverId, id);
   }
 
   // This function loads all of the values in a database in the correct order
@@ -303,12 +298,12 @@ public final class Controller implements RawController, BasicController {
         // If the message has a valid user and conversation, add it to the model
         if (foundUser != null && foundConversation != null && isIdFree(messageID)) {
 
-          model.add(new Message(messageID, Uuids.NULL, Uuids.NULL, creation, foundUser.id, content));
+          model.add(new Message(messageID, Uuid.NULL, Uuid.NULL, creation, foundUser.id, content));
 
           // Find and update the previous "last" message so that it's "next" value
           // will point to the new message.
 
-          if (Uuids.equals(foundConversation.lastMessage, Uuids.NULL)) {
+          if (Uuid.equals(foundConversation.lastMessage, Uuid.NULL)) {
 
             // The conversation has no messages in it, that's why the last message is NULL (the first
             // message should be NULL too. Since there is no last message, then it is not possible
@@ -324,7 +319,7 @@ public final class Controller implements RawController, BasicController {
           // If the first message points to NULL it means that the conversation was empty and that
           // the first message should be set to the new message. Otherwise the message should
           // not change.
-          if (Uuids.equals(foundConversation.firstMessage, Uuids.NULL)) {
+          if (Uuid.equals(foundConversation.firstMessage, Uuid.NULL)) {
             foundConversation.firstMessage = messageID;
           }
 

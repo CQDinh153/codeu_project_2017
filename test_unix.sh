@@ -14,5 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+TEST_DB = "$1"
+
+if [ "$TEST_DB" == "" ] ; then
+    echo "usage: <DATABASE>"
+    echo ""
+    echo "DATABASE : The path of the database file that will be used for testing"
+    exit 1
+fi
+
+set -e
+
 cd "./bin"
-java -cp ".:../third_party/junit4.jar:sqlite-jdbc.jar" codeu.chat.TestRunner "testDatabase.db"
+java -cp ".:../third_party/junit4.jar:sqlite-jdbc.jar" codeu.chat.TestRunner "$TEST_DB"
