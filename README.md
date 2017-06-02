@@ -32,7 +32,7 @@ and Windows.
   $ sh setup_database_unix.sh <TEST_DATABASE>
   $ sh test_unix.sh <TEST_DATABASE>
   ```
-  <TEST_DATABASE> must be a path that Java can interpret as a file. 
+  TEST_DATABASE must be a path that Java can interpret as a file. 
   Relative paths are in reference to the /bin/ folder in the repo.
   
   3. Before you run the project for the first time, you will need 
