@@ -41,7 +41,6 @@ public class ConversationRenderer extends JLabel implements ListCellRenderer<Obj
     if (isSelected) {
       setForeground(Color.WHITE);
       setBackground(new Color(188, 32, 49));
-      setFont(new Font("Lucida Grande", Font.BOLD, 14));
     }
     
     return this;

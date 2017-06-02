@@ -25,6 +25,8 @@ public class MessageRenderer extends JLabel implements ListCellRenderer<Object> 
   public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
     String s = value.toString();
+    
+    // retrieves the individual pieces of data from the string passed in
     String usernameLabel = s.substring(0, s.indexOf(":"));
     String timeLabel = s.substring(s.indexOf("[") + 1, s.indexOf("]"));
     String messageLabel = s.substring(s.indexOf("]") + 3);

@@ -189,8 +189,8 @@ public final class ConversationPanel extends JPanel {
             // No duplicate names are allowed
             if (ConversationPanel.this.convListModel.contains(s)) {
               JOptionPane.showMessageDialog(ConversationPanel.this, "Conversation already exists");
-            } else if (s.length() > 40) { // conversation name length should not exceed 40 characters
-              JOptionPane.showMessageDialog(ConversationPanel.this, "Max length for a conversation name is 40 characters");
+            } else if (s.length() > 35) { // conversation name length should not exceed 35 characters
+              JOptionPane.showMessageDialog(ConversationPanel.this, "Max length for a conversation name is 35 characters");
             } else {
               clientContext.conversation.startConversation(s, clientContext.user.getCurrent().id);
               ConversationPanel.this.getNewConversations();

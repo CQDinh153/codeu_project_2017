@@ -200,7 +200,7 @@ public final class MessagePanel extends JPanel {
     final JButton addButton = new JButton("send");
     addButton.setBorder(BorderFactory.createEmptyBorder(7, 7, 7, 7));
     addButton.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
-    addButton.setBackground(new Color(13, 79, 109));
+    addButton.setBackground(new Color(23, 86, 118));
     addButton.setForeground(Color.WHITE);
     addButton.setPreferredSize(new Dimension(44, 31));
     buttonPanel.add(addButton);
